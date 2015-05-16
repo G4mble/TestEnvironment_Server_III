@@ -113,6 +113,7 @@ public class PlayerCharacter extends CombatantModel{
 	public void setSightDistance(int sightDistance) {
 		this.sightDistance = sightDistance;
 	}
+	
 	/**
 	 * @author Heusser, Caspar
 	 * @return the act

@@ -200,4 +200,9 @@ public class InventoryModel
 	{
 		return this.equipmentList;
 	}
+	
+	public void setEquipmentList(EquipmentModel[] paramEquipmentList)
+	{
+		this.equipmentList = paramEquipmentList;
+	}
 }

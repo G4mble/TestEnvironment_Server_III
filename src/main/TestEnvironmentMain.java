@@ -1,13 +1,13 @@
 package main;
 
-import dataBase.DataBaseController;
+import platform.ProgramController;
 
 public class TestEnvironmentMain
 {
 
 	public static void main(String[] args)
 	{
-		DataBaseController dbController = DataBaseController.getInstance();
+		new ProgramController();
 	}
 
 }
