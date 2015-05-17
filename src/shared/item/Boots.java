@@ -1,5 +1,8 @@
 package shared.item;
 
+/**
+ * test comment
+ * */
 public class Boots extends Armament
 {
 
