@@ -40,7 +40,8 @@ public class DataBaseController
 	
 	/**
 	 * private constructor to guarantee only one instance of this class at a time</br>
-	 * tries to connect to the DB to see if it is there, switches to noDB mode if an error occurs
+	 * tries to connect to the DB to see if it is there, switches to noDB mode if an error occurs</br>
+	 * initialises the database if not already done
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	private DataBaseController(ProgramController paramProgramController)
@@ -96,7 +97,7 @@ public class DataBaseController
 	 * closes all open connections to the database to ensure data integrity
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	public void closeConnection()
+	private void closeConnection()
 	{
 		try
 		{
@@ -113,6 +114,11 @@ public class DataBaseController
 		}
 	}
 	
+	/**
+	 * creates all needed tables in the database and inserts required data for the game to work</br>
+	 * if the database has been initialized before, this method changes nothing
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	private void initializeDatabaseSchema()
 	{
 		this.establishConnection();
@@ -140,6 +146,12 @@ public class DataBaseController
 		}
 	}
 	
+	/**
+	 * called by ServerEngine_I for communcation purpose</br>
+	 * adds the given Message to a list and starts the handle process if not already running
+	 * @author Staufenberg, Thomas, 5820359
+	 * @param paramMessage the Message to receive
+	 * */
 	public void receiveMessage(Message paramMessage)
 	{
 		this.incomingMessageList.add(paramMessage);
@@ -147,6 +159,10 @@ public class DataBaseController
 			this.handleMessage();
 	}
 	
+	/**
+	 * called by this.receiveMessage, iterates over incomingMessageList while not empty
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	private void handleMessage()
 	{
 		if(!this.messageIsProcessing)
@@ -179,7 +195,7 @@ public class DataBaseController
 					this.sendMessage(new OperationRejectedMessage("Benutzername bereits vergeben!"));
 			else if(currentMessage instanceof LinkCharacterToUserMessage)
 				if(this.linkCharacterToUser(((LinkCharacterToUserMessage) currentMessage).getUsername(), ((LinkCharacterToUserMessage) currentMessage).getPlayerCharacter()))
-					this.sendMessage(new OperationPerformedMessage(1));
+					this.sendMessage(new OperationPerformedMessage());
 				else
 					this.sendMessage(new OperationRejectedMessage("Fehler beim Erstellen des Charakters!"));
 			else if(currentMessage instanceof SavePlayerDataMessage)
@@ -188,6 +204,11 @@ public class DataBaseController
 		this.messageIsProcessing = false;
 	}
 	
+	/**
+	 * processes outgoing Messages and calls the receiveMessage method of the respective target adress
+	 * @param paramMessage the Message to be send
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	private void sendMessage(Message paramMessage)
 	{
 		this.programController.receiveMessage(paramMessage);
@@ -199,7 +220,7 @@ public class DataBaseController
 	 * @author Staufenberg, Thomas, 5820359
 	 * @param paramUsername username entered in the login panel
 	 * @param paramPassword password entered in the login panel
-	 * @return Message
+	 * @return true: login successfull</br>false: error on username or password
 	 * */
 	private boolean verifyLogin(String paramUsername, String paramPassword)
 	{
@@ -227,9 +248,11 @@ public class DataBaseController
 	/**
 	 * identifies Item via slotID
 	 * @return ItemModel created with data read from the database
+	 * @param paramItemResult ResultSet of the item to be identified
+	 * @param paramInventoryResult ResultSet of the inventory the item belongs to
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	private ItemModel switchEquipment(ResultSet paramItemResult, ResultSet paramInventoryResult) throws SQLException
+	private ItemModel identifyEquipment(ResultSet paramItemResult, ResultSet paramInventoryResult) throws SQLException
 	{
 		switch(paramItemResult.getInt(3))
 		{
@@ -256,9 +279,10 @@ public class DataBaseController
 	
 	/**
 	 * reads all user related data from the database, creates corresponding data model objects</br>
-	 * is called by DataBaseController.verifyLogin() after confirmation of username, password
 	 * @author Staufenberg, Thomas, 5820359
-	 * @param paramUsername username forwarded by DataBaseController.verifyLogin()
+	 * @param paramUsername name of the user requesting the playerData
+	 * @param paramClientID clientID to assign PlayerCharacter to specific client
+	 * @return the PlayerCharacter created from the data read from the database 
 	 * */
 	private PlayerCharacter loadPlayerData(String paramUsername, int paramClientID)
 	{		
@@ -288,7 +312,7 @@ public class DataBaseController
 				{	
 					itemResult.next();
 					if(itemResult.getInt(2) != 1)
-						currentInventoryContentList.add(this.switchEquipment(itemResult, inventoryResult));
+						currentInventoryContentList.add(this.identifyEquipment(itemResult, inventoryResult));
 				}
 				
 				//add equipment to equipmentList
@@ -297,7 +321,7 @@ public class DataBaseController
 				{
 					itemResult.next();
 					if(itemResult.getInt(2) != 1)
-						currentEquipmentList[j] = (EquipmentModel) this.switchEquipment(itemResult, inventoryResult);
+						currentEquipmentList[j] = (EquipmentModel) this.identifyEquipment(itemResult, inventoryResult);
 				}
 	
 				//create inventory, link with inventoryContentList and equipmentList
@@ -321,6 +345,16 @@ public class DataBaseController
 		return null;
 	}
 	
+	/**
+	 * adds the Item to the database if not already done, updates inventorySlot of the item in the inventoryItemAllocation table</br> 
+	 * is called by savePlayerData()
+	 * @param paramAddedItemList ArrayList<Integer> contains the itemID of all items added to the inventory during the current save process
+	 * @param paramToDeleteItemList ArrayList<Integer> contains the itemID of all items that might have to be removed from the database
+	 * @param paramItemResult ResultSet of the current item
+	 * @param paramID itemID of the current item
+	 * @param paramItem the current item 
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	private void saveEquipment(ArrayList<Integer> paramAddedItemList, ArrayList<Integer> paramToDeleteItemList, ResultSet paramItemResult, int paramID, ItemModel paramItem) throws SQLException
 	{
 		EquipmentModel currentEquip = (EquipmentModel) paramItem;
@@ -346,6 +380,12 @@ public class DataBaseController
 		}
 	}
 	
+	/**
+	 * saves all relevant data of the given player to the database
+	 * @param paramUsername name of the current player
+	 * @param paramPlayer the current player
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	private void savePlayerData(String paramUsername, PlayerCharacter paramPlayer)
 	{
 		//collect data to save
@@ -463,10 +503,10 @@ public class DataBaseController
 	
 	/**
 	 * verifies if the given username is not already taken</br>
-	 * only called by createNewUser() thus no connection.close() needed here
+	 * only called by createNewUser() thus no connection.close() needed here (nested call)
 	 * @author Staufenberg, Thomas, 5820359
 	 * @param paramUsername username entered in the register panel
-	 * @return {true|false}
+	 * @return true: username not taken yet</br>false: username already taken
 	 * */
 	private boolean isValidUsername(String paramUsername)
 	{
@@ -488,10 +528,10 @@ public class DataBaseController
 	 * invokes username verification</br>
 	 * creates data sets for the given user in the following relations:</br>
 	 * -registeredUser</br>-saveGame</br>-statistics</br>-inventory</br>-inventoryItemAllocation</br>-playerAllocation
-	 * @author Staufenberg, Thomas, 5820359
 	 * @param paramUsername username entered in the register panel
 	 * @param paramPassword password entered in the register panel
-	 * @return Message
+	 * @return true: user successfully created</br>false: username already taken
+	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	private boolean createNewUser(String paramUsername, String paramPassword)
 	{
@@ -574,14 +614,16 @@ public class DataBaseController
 	}
 	
 	/**
-	 * creates a data set in the relation 'player'</br>links the playerID to 'playerAllocation' via username
+	 * creates a data set in the relation 'player'</br>links the playerID to 'playerAllocation' via username</br>
+	 * invokes save operation if the process finished without exception
 	 * @param paramUsername username of the considered user
-	 * @param paramPlayerCharakter PlayerCharacter object of the associated user
+	 * @param paramPlayer PlayerCharacter object of the associated user
+	 * @return true: character successfully linked to user</br>false: error during the process
 	 * @author Staufenberg, Thomas, 5820359
-	 * @return Message
 	 * */
-	private boolean linkCharacterToUser(String paramUsername, PlayerCharacter paramPlayerCharakter)
+	private boolean linkCharacterToUser(String paramUsername, PlayerCharacter paramPlayer)
 	{
+		boolean noErrorDetected = true;
 		this.establishConnection();
 		
 		try (Statement stmt = this.dbConnection.createStatement(); ResultSet consitencyCheckResult = stmt.executeQuery("SELECT playerID FROM playerAllocation WHERE username = '" + paramUsername + "'"))
@@ -591,7 +633,7 @@ public class DataBaseController
 			{
 				this.dbConnection.setAutoCommit(false);				// begin transaction
 
-				stmt.executeUpdate("INSERT INTO player(charImg, charName, hitpoints, attackValue, defenseValue) VALUES('" + paramPlayerCharakter.getImagePath() + "', '" + paramPlayerCharakter.getCharacterName() + "', " + paramPlayerCharakter.getLife() + ", " + paramPlayerCharakter.getAttack() + ", " + paramPlayerCharakter.getDefense() + ")");
+				stmt.executeUpdate("INSERT INTO player(charImg, charName, hitpoints, attackValue, defenseValue) VALUES('" + paramPlayer.getImagePath() + "', '" + paramPlayer.getCharacterName() + "', " + paramPlayer.getLife() + ", " + paramPlayer.getAttack() + ", " + paramPlayer.getDefense() + ")");
 
 				try (ResultSet playerIDResult = stmt.executeQuery("SELECT max(playerID) FROM player"))
 				{
@@ -604,6 +646,7 @@ public class DataBaseController
 		}
 		catch (SQLException sqlE)
 		{
+			noErrorDetected = false;
 			try
 			{
 				this.dbConnection.rollback(); 						// onException: attempt rollback
@@ -624,6 +667,8 @@ public class DataBaseController
 			{
 				this.dbConnection.setAutoCommit(true);				// restore default: autoCommit = true
 				this.closeConnection();
+				if(noErrorDetected)
+					this.savePlayerData(paramUsername, paramPlayer);
 			}
 			catch(SQLException sqlE)
 			{

@@ -6,8 +6,16 @@ import javax.swing.JFrame;
 import javax.swing.JButton;
 import java.awt.Dimension;
 
+/**
+ * displays the menu
+ * @author Staufenberg, Thomas, 5820359
+ * */
 public class MenuView extends JFrame
 {
+	/**
+	 * creates all window components
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public MenuView(MenuController paramMenuController) 
 	{
 		getContentPane().setLayout(null);

@@ -13,23 +13,32 @@ import java.awt.Dimension;
 import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
 
+/**
+ * displays the userInputView</br>can either be used for login or register
+ * @author Staufenberg, Thomas, 5820359
+ * */
 public class UserInputView extends JFrame
 {
 	private static final long serialVersionUID = 5652433001281699604L;
 	private JTextField txtFUsername;	
 	private JPasswordField txtFPassword;
 	private JRadioButton rdbtnWarrior, rdbtnMage;
-	
+
+	/**
+	 * creates all window components
+	 * @param paramAction spefify the usage of the userInputView {"Einloggen", "Registrieren"}
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public UserInputView(UserInputController paramLoginController, String paramAction)
 	{
 		String actionCommand;
-		if(paramAction.equals("Einloggen"))
+		if(paramAction.equals("Einloggen"))				//modify components for login usage
 		{
 			actionCommand = "login";
 			this.setSize(new Dimension(350, 105));
 			this.setTitle("Login");
 		}
-		else
+		else											//modify componenty for register usage
 		{
 			actionCommand = "register";
 			this.setSize(new Dimension(350, 145));
@@ -52,6 +61,8 @@ public class UserInputView extends JFrame
 			lblCharacter.setBounds(10, 81, 84, 21);
 			getContentPane().add(lblCharacter);
 		}
+		
+		//create general components used in all cases
 		
 		getContentPane().setLayout(null);
 		
@@ -90,17 +101,29 @@ public class UserInputView extends JFrame
 		this.setVisible(true);
 	}
 	
+	/**
+	 * @return username entered in the textField
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public String getUsername()
 	{
 		return this.txtFUsername.getText();
 	}
 	
+	/**
+	 * @return password entered in the textField
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	@SuppressWarnings("deprecation")
 	public String getPassword()
 	{
 		return this.txtFPassword.getText();
 	}
 	
+	/**
+	 * @return ID of the character selected via radioButtons
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public int getSelectedCharacter()
 	{
 		if(this.rdbtnWarrior.isSelected())

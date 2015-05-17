@@ -2,26 +2,18 @@ package message;
 
 import shared.character.PlayerCharacter;
 
-public class LinkCharacterToUserMessage extends Message
+/**
+ * Message used to transfer playerData to the database after the user has selected a character
+ * @author Staufenberg, Thomas, 5820359
+ * */
+public class LinkCharacterToUserMessage extends PlayerDataMessage
 {
-	private String username;
-	private PlayerCharacter playerCharacter;
-	
+	/**
+	 * forwards username, paramPlayer and receiverID to superclass
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public LinkCharacterToUserMessage(String paramUsername, PlayerCharacter paramPlayer)
 	{
-		super(200);
-		this.username = paramUsername;
-		this.playerCharacter = paramPlayer;
+		super(200, paramUsername, paramPlayer);
 	}
-	
-	public String getUsername()
-	{
-		return this.username;
-	}
-	
-	public PlayerCharacter getPlayerCharacter()
-	{
-		return this.playerCharacter;
-	}
-
 }

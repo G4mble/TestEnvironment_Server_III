@@ -1,24 +1,17 @@
 package message;
 
-public class VerifyLoginMessage extends Message
+/**
+ * Message used to transfer login data for verification purpose
+ * @author Staufenberg, Thomas, 5820359
+ * */
+public class VerifyLoginMessage extends UserDataMessage
 {
-	private String username, password;
-	
+	/**
+	 * forwards username, password and receiverID to superclass
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public VerifyLoginMessage(String paramUsername, String paramPassword)
 	{
-		super(200);
-		this.username = paramUsername;
-		this.password = paramPassword;
+		super(200, paramUsername, paramPassword);
 	}
-	
-	public String getUsername()
-	{
-		return this.username;
-	}
-	
-	public String getPassword()
-	{
-		return this.password;
-	}
-
 }

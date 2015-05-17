@@ -6,10 +6,18 @@ import javax.swing.JFrame;
 import java.awt.Dimension;
 import javax.swing.JButton;
 
+/**
+ * displays the showcase view
+ * @author Staufenberg, Thomas, 5820359
+ * */
 public class ShowcaseView extends JFrame
 {
 	private static final long serialVersionUID = -1847497075140092998L;
 
+	/**
+	 * creates all window components
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public ShowcaseView(ShowcaseController paramShowcaseController)
 	{
 		getContentPane().setLayout(null);

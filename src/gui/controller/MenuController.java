@@ -6,17 +6,29 @@ import java.awt.event.ActionListener;
 import platform.ProgramController;
 import gui.view.MenuView;
 
+/**
+ * controller of MenuView JFrame, processes ActionEvents triggered there
+ * @author Staufenberg, Thomas, 5820359
+ * */
 public class MenuController implements ActionListener
 {
 	private MenuView menuView;
 	private ProgramController programController;
 	
+	/**
+	 * instantiates MenuView
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public MenuController(ProgramController paramProgramController)
 	{
 		this.programController = paramProgramController;
 		this.menuView = new MenuView(this);
 	}
 
+	/**
+	 * processes ActionEvents triggered in this.menuView
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
@@ -31,7 +43,7 @@ public class MenuController implements ActionListener
 				this.programController.initiateAuthentication("Registrieren");
 				break;
 			case "exit":
-				this.programController.exitProgram(0);
+				System.exit(0);
 		}
 	}
 

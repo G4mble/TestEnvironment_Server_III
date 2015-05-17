@@ -1,18 +1,17 @@
 package message;
 
+/**
+ * Message used to indicate that an operation has been successfully performed
+ * @author Staufenberg, Thomas, 5820359
+ * */
 public class OperationPerformedMessage extends Message
-{
-	private int operationID;				//linkCharToUser: 1 ; ... 
-	
-	public OperationPerformedMessage(int paramOperationID)
+{	
+	/**
+	 * creates a new Message and sets the receiverID
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	public OperationPerformedMessage()
 	{
 		super(100);
-		this.operationID = paramOperationID;
 	}
-	
-	public int getOperationID()
-	{
-		return this.operationID;
-	}
-
 }

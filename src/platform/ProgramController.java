@@ -9,6 +9,10 @@ import message.*;
 import dataBase.DataBaseController;
 import gui.controller.*;
 
+/**
+ * gateway class; is in control of all other controller classes</br>redirect calls between different controllers
+ * @author Staufenberg, Thomas, 5820359
+ * */
 public class ProgramController
 {
 	private MenuController menuController;
@@ -21,6 +25,10 @@ public class ProgramController
 	private int activeCharID;
 	private PlayerCharacter activeCharacter;
 	
+	/**
+	 * initializes global variables, creates a menu for the first time
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public ProgramController()
 	{
 		this.incomingMessageList = new ArrayList<>();
@@ -28,48 +36,48 @@ public class ProgramController
 		this.menuController = new MenuController(this);
 	}
 	
+	/**
+	 * releases unused menuController</br>
+	 * creates new UserInputController as login- or register view, depending on the action specified
+	 * @param paramAction {"Einloggen", "Registrieren"} action requested by user via menu
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public void initiateAuthentication(String paramAction)
 	{
 		this.menuController = null;
 		this.userInputController = new UserInputController(this, paramAction);
 	}
 	
-	public void returnToMenu()
-	{
-		//TODO set all unused controller to null
-		this.userInputController = null;
-		this.menuController = new MenuController(this);
-	}
-	
-	public void beginLoginProcess(String paramUsername, String paramPassword)
+	/**
+	 * is called after user entered a set of username/password for login purpose</br>
+	 * forwards given data to dataBase for verification via Message
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	public void initiateLoginProcess(String paramUsername, String paramPassword)
 	{
 		this.activeUsername = paramUsername;
 		this.sendMessage(new VerifyLoginMessage(paramUsername, paramPassword));
 	}
 	
-	private void rejectOperation(String paramMessage)
-	{
-		this.activeUsername = "";
-		System.out.println(paramMessage);
-	}
-	
-	private void finalizeAuthenticationProcess(boolean paramSavePlayerData)
-	{
-		if(paramSavePlayerData)
-			this.sendMessage(new SavePlayerDataMessage(this.activeUsername, this.activeCharacter));
-		this.userInputController.getUserInputView().dispose();
-		this.userInputController = null;
-		this.showcaseController = new ShowcaseController(this);
-	}
-	
-	public void invokeUserRegistration(String paramUsername, String paramPassword, int paramCharID)
+	/**
+	 * is called after user entered a set of username/password for registration purpose</br>
+	 * forwards given data to dataBase for verification via Message
+	 * @param paramCharID ID of the selected character
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	public void initiateRegistrationProcess(String paramUsername, String paramPassword, int paramCharID)
 	{
 		this.activeUsername = paramUsername;
 		this.activeCharID = paramCharID;
 		this.sendMessage(new RegisterUserMessage(paramUsername, paramPassword));
 	}
 	
-	public void finalizeRegistrationProcess()
+	/**
+	 * is called after RegisterSuccessMessage has been received</br>
+	 * creates a new character depending on the users selection</br>invokes link operation of user and character
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	public void createNewCharacter()
 	{
 		if(this.activeCharID == 1)
 			this.activeCharacter = new Warrior(1);				//set default clientID = 1
@@ -78,25 +86,48 @@ public class ProgramController
 		this.sendMessage(new LinkCharacterToUserMessage(this.activeUsername, this.activeCharacter));
 	}
 	
-	private void invokeFollowUpAction(int paramOperationID)
+	/**
+	 * is called after login has been verified or user has been successfully created</br>
+	 * invokes save operation for userdata if specified</br>
+	 * releases unused views and controller, creates new ShowcaseController
+	 * @param paramSavePlayerData true: invokes save operation for userData; false: additional save operation will not be executed
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	private void finalizeAuthenticationProcess()
 	{
-		switch(paramOperationID)
-		{
-			case 1:				//successfull regestration and character creation
-				this.finalizeAuthenticationProcess(true);
-				break;
-			case 2:				//successfully logged in; playerData read from DB
-				this.finalizeAuthenticationProcess(false);
-				break;
-		}
+		this.userInputController.getUserInputView().dispose();
+		this.userInputController = null;
+		this.showcaseController = new ShowcaseController(this);
 	}
 	
-	private void sendMessage(Message paramMessage)
+	/**
+	 * is called after RejectOperationMessage has been received</br>
+	 * notifies the user that some operation requested by him was rejected, displays corresponding message
+	 * @param paramMessage text to be displayed in error message
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	private void rejectOperation(String paramMessage)
 	{
-		if(paramMessage.getReceiverID() == 200)
-			this.dbController.receiveMessage(paramMessage);
+		this.activeUsername = "";
+		System.out.println(paramMessage);
 	}
 	
+	/**
+	 * releases all unused controllers, creates new MenuController
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	public void returnToMenu()
+	{
+		//TODO set all unused controller to null
+		this.userInputController = null;
+		this.menuController = new MenuController(this);
+	}
+	
+	/**
+	 * adds the given Message to a list and starts the handle process if not already running
+	 * @author Staufenberg, Thomas, 5820359
+	 * @param paramMessage the Message to receive
+	 * */
 	public void receiveMessage(Message paramMessage)
 	{
 		this.incomingMessageList.add(paramMessage);
@@ -104,6 +135,10 @@ public class ProgramController
 			this.handleMessage();
 	}
 	
+	/**
+	 * called by this.receiveMessage, iterates over incomingMessageList while not empty
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	private void handleMessage()
 	{
 		if(!this.messageIsProcessing)
@@ -123,21 +158,26 @@ public class ProgramController
 			if(currentMessage instanceof OperationRejectedMessage)
 				this.rejectOperation(((OperationRejectedMessage) currentMessage).getErrorMessage());
 			else if(currentMessage instanceof OperationPerformedMessage)
-				this.invokeFollowUpAction(((OperationPerformedMessage) currentMessage).getOperationID());
+				this.finalizeAuthenticationProcess();
 			else if(currentMessage instanceof LoginSuccessMessage)
 			{
 				this.activeCharacter = ((LoginSuccessMessage) currentMessage).getPlayerCharacter();
-				this.invokeFollowUpAction(2);
+				this.finalizeAuthenticationProcess();
 			}
 			else if(currentMessage instanceof RegisterSuccessMessage)
-				this.finalizeRegistrationProcess();
+				this.createNewCharacter();
 		}
 		this.messageIsProcessing = false;
 	}
 	
-	public void exitProgram(int paramState)
+	/**
+	 * processes outgoing Messages and calls the receiveMessage method of the respective target adress
+	 * @param paramMessage the Message to be send
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	private void sendMessage(Message paramMessage)
 	{
-		this.dbController.closeConnection();
-		System.exit(paramState);
+		if(paramMessage.getReceiverID() == 200)
+			this.dbController.receiveMessage(paramMessage);
 	}
 }
