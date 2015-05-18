@@ -2,8 +2,14 @@ package gui.controller;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import platform.ProgramController;
+import shared.InventoryModel;
+import shared.character.PlayerCharacter;
+import shared.item.EquipmentModel;
+import shared.item.ItemModel;
+import shared.statistics.StatisticsModel;
 import gui.view.ShowcaseView;
 
 /**
@@ -19,10 +25,10 @@ public class ShowcaseController implements ActionListener
 	 * instantiates ShowcaseView
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	public ShowcaseController(ProgramController paramProgramController)
+	public ShowcaseController(ProgramController paramProgramController, String paramUsername, PlayerCharacter paramPlayer)
 	{
 		this.programController = paramProgramController;
-		this.showcaseView = new ShowcaseView(this);
+		this.showcaseView = new ShowcaseView(this, paramUsername, paramPlayer);
 	}
 
 	/**
@@ -38,5 +44,4 @@ public class ShowcaseController implements ActionListener
 				System.exit(0);;
 		}
 	}
-
 }

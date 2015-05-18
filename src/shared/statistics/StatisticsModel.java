@@ -20,6 +20,11 @@ public class StatisticsModel
 		this.timePlayed = paramTimePlayed;
 	}
 	
+	/**
+	 * constructor for a new default statistics model</br>
+	 * calls second constructor with all values set to default
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public StatisticsModel()
 	{
 		this(0, 0, 0, 0);

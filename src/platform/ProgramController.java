@@ -97,7 +97,7 @@ public class ProgramController
 	{
 		this.userInputController.getUserInputView().dispose();
 		this.userInputController = null;
-		this.showcaseController = new ShowcaseController(this);
+		this.showcaseController = new ShowcaseController(this, this.activeUsername, this.activeCharacter);
 	}
 	
 	/**
