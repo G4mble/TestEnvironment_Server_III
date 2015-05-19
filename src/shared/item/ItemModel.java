@@ -63,7 +63,7 @@ public abstract class ItemModel
 	}
 	
 	/**
-	 * drops the current item into the worlMap
+	 * drops the current item into the worldMap
 	 * @param paramPlayer PlayerCharacter model of the player that wants to drop the item
 	 * @param paramGlobalInventory globalInventory of the level in which player is currently located
 	 * @return true: item successfully dropped</br>false: item not in inventory OR error during this.removeFromEquip()

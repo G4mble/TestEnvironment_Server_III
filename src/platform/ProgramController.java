@@ -166,6 +166,8 @@ public class ProgramController
 			}
 			else if(currentMessage instanceof RegisterSuccessMessage)
 				this.createNewCharacter();
+			else if(currentMessage instanceof SavePlayerDataMessage)
+				this.sendMessage(currentMessage);
 		}
 		this.messageIsProcessing = false;
 	}
@@ -177,7 +179,6 @@ public class ProgramController
 	 * */
 	private void sendMessage(Message paramMessage)
 	{
-		if(paramMessage.getReceiverID() == 200)
-			this.dbController.receiveMessage(paramMessage);
+		this.dbController.receiveMessage(paramMessage);
 	}
 }

@@ -201,6 +201,20 @@ public class InventoryModel
 		return this.equipmentList;
 	}
 	
+	/**
+	 * @return maximum amount of inventory slots available
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	public int getInventorySize()
+	{
+		return this.INVENTORY_SIZE;
+	}
+	
+	/**
+	 * ovewrites the current equipmentList with the given one
+	 * @param paramEquipmentList the equipmentList to be set
+	 * @author Staufenberg, Thomas 5820359
+	 * */
 	public void setEquipmentList(EquipmentModel[] paramEquipmentList)
 	{
 		this.equipmentList = paramEquipmentList;

@@ -380,6 +380,23 @@ public class DataBaseController
 		}
 	}
 	
+	public void deleteItem(ArrayList<Integer> paramToDeleteItemList, ResultSet paramItemResult)
+	{
+		try(Statement stmt = this.dbConnection.createStatement())
+		{
+			if(paramItemResult.getInt(1) != 1)
+			{
+				stmt.executeUpdate("UPDATE inventoryItemAllocation SET itemID = 1 WHERE allocationID = " + paramItemResult.getInt(2) );
+				paramToDeleteItemList.add(paramItemResult.getInt(1));
+			}
+		}
+		catch(SQLException sqlE)
+		{
+			System.err.println("Fehler in DBController.deleteItem()");
+			sqlE.printStackTrace();
+		}
+	}
+	
 	/**
 	 * saves all relevant data of the given player to the database
 	 * @param paramUsername name of the current player
@@ -410,46 +427,68 @@ public class DataBaseController
 				stmt.executeUpdate("UPDATE statistics SET monsterKillCount = " + currentStatistics.getMonsterKillCount() + ", numberOfDeaths = " + currentStatistics.getDeathCount() + ", goldEarned = " + currentStatistics.getGoldEarned() + ", timePlayed = " + currentStatistics.getTimePlayed() + " WHERE statisticsID = " + retrieveIDResult.getInt(4));
 				stmt.executeUpdate("UPDATE player SET currentLevel = " + paramPlayer.getLevel() + ", experience = " + paramPlayer.getExperiencePoints() + " WHERE playerID = " + retrieveIDResult.getInt(1));
 				
+				//update inventory values: gold and armorParts				
+				stmt.executeUpdate("UPDATE inventory SET goldCount = " + currentInventory.getGoldCount() + ", armorPartsCount = " + currentInventory.getArmorPartsCount() + " WHERE inventoryID = " + retrieveIDResult.getInt(2));
+				
 				//update items stored in inventory
 				ArrayList<Integer> toDeleteItemList = new ArrayList<>();
 				ArrayList<Integer> addedItemList = new ArrayList<>();
 				
-				for(int i = 0; i < currentInventoryContentList.size(); i++)
+				for(int i = 0; i < currentInventory.getInventorySize(); i++)
 				{
-					ItemModel currentItem = currentInventoryContentList.get(i);
-					int currentID = currentItem.getItemID();
-					itemResult.next();
-					
-					if(currentItem instanceof ConsumableModel)
+					try
 					{
-						int tmpID = 0;
-						if(currentItem instanceof HealthPotion)
+						ItemModel currentItem = currentInventoryContentList.get(i);
+						int currentID = currentItem.getItemID();
+						itemResult.next();
+						
+						if(currentItem instanceof ConsumableModel)
 						{
-							stmt.executeUpdate("UPDATE inventory SET healthPotionCount = " + ((HealthPotion) currentItem).getStackSize() + " WHERE inventoryID = " + retrieveIDResult.getInt(2));
-							tmpID = 2;
+							int tmpID = 0;
+							if(currentItem instanceof HealthPotion)
+							{
+								stmt.executeUpdate("UPDATE inventory SET healthPotionCount = " + ((HealthPotion) currentItem).getStackSize() + " WHERE inventoryID = " + retrieveIDResult.getInt(2));
+								tmpID = 2;
+							}
+							else if(currentItem instanceof ManaPotion)
+							{
+								stmt.executeUpdate("UPDATE inventory SET manaPotionCount = " + ((ManaPotion) currentItem).getStackSize() + " WHERE inventoryID = " + retrieveIDResult.getInt(2));
+								tmpID = 3;
+							}
+							stmt.executeUpdate("UPDATE inventoryItemAllocation SET itemID = " + tmpID + " WHERE allocationID = " + itemResult.getInt(2));
+							if(itemResult.getInt(1) != 1)
+									toDeleteItemList.add(itemResult.getInt(1));
+							continue;
 						}
-						else if(currentItem instanceof ManaPotion)
-						{
-							stmt.executeUpdate("UPDATE inventory SET manaPotionCount = " + ((ManaPotion) currentItem).getStackSize() + " WHERE inventoryID = " + retrieveIDResult.getInt(2));
-							tmpID = 3;
-						}
-						stmt.executeUpdate("UPDATE inventoryItemAllocation SET itemID = " + tmpID + " WHERE allocationID = " + itemResult.getInt(2));
-						if(itemResult.getInt(1) != 1)
-								toDeleteItemList.add(itemResult.getInt(1));
-						continue;
+	
+						this.saveEquipment(addedItemList, toDeleteItemList, itemResult, currentID, currentItem);
 					}
-					
-					this.saveEquipment(addedItemList, toDeleteItemList, itemResult, currentID, currentItem);
+					catch(IndexOutOfBoundsException iOoBE)
+					{
+						//if the rest of the inventory is empty, delete all previously stored items
+						for(int j = i; j < 10; j++)
+						{
+							itemResult.next();
+							this.deleteItem(toDeleteItemList, itemResult);
+						}
+						// exit main loop
+						break;
+					}
 				}
 				
 				//update items in equipment
 				itemResult.absolute(10);				//moves the cursor to row 10, one row before equipList starts
 				for(int j = 0; j < currentEquipmentList.length; j++)
 				{
-					ItemModel currentItem = currentEquipmentList[j];
-					int currentID = currentItem.getItemID();
+					EquipmentModel currentItem = currentEquipmentList[j];
 					itemResult.next();
-					this.saveEquipment(addedItemList, toDeleteItemList, itemResult, currentID, currentItem);
+					if(currentItem != null)
+					{
+						int currentID = currentItem.getItemID();
+						this.saveEquipment(addedItemList, toDeleteItemList, itemResult, currentID, currentItem);
+					}
+					else
+						this.deleteItem(toDeleteItemList, itemResult);		//if the current slot is empty, delete the previously stored item if exists
 				}
 				
 	
