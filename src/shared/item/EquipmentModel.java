@@ -41,7 +41,7 @@ public abstract class EquipmentModel extends ItemModel
 	private int calculateArmorPartsRevenue()
 	{
 		//TODO insert magic formula to calculate armorPartsRevenue, propably depending on levelRestriction
-		return -1;
+		return 1;
 	}
 	
 	/**
@@ -63,7 +63,7 @@ public abstract class EquipmentModel extends ItemModel
 	 * @author Staufenberg, Thomas, 5820359
 	 * @return true: item successfully removed from the equipment and added to the inventory</br>false: inventory full
 	 * */
-	public boolean removeFromEquip(PlayerCharacter paramPlayer, boolean paramAddToInventory)
+	protected boolean removeFromEquip(PlayerCharacter paramPlayer, boolean paramAddToInventory)
 	{
 		return paramPlayer.getInventory().removeItemFromEquip(this, paramAddToInventory);
 	}

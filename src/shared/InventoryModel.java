@@ -2,7 +2,6 @@ package shared;
 
 import java.util.ArrayList;
 
-import shared.item.Armament;
 import shared.item.ConsumableModel;
 import shared.item.EquipmentModel;
 import shared.item.GoldStack;

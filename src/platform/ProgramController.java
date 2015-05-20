@@ -2,6 +2,8 @@ package platform;
 
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
+
 import shared.character.Mage;
 import shared.character.PlayerCharacter;
 import shared.character.Warrior;
@@ -15,10 +17,8 @@ import gui.controller.*;
  * */
 public class ProgramController
 {
-	private MenuController menuController;
 	private UserInputController userInputController;
 	private DataBaseController dbController;
-	private ShowcaseController showcaseController;
 	private ArrayList<Message> incomingMessageList;
 	private boolean messageIsProcessing = false;
 	private String activeUsername;
@@ -33,7 +33,7 @@ public class ProgramController
 	{
 		this.incomingMessageList = new ArrayList<>();
 		this.dbController = DataBaseController.getInstance(this);
-		this.menuController = new MenuController(this);
+		new MenuController(this);
 	}
 	
 	/**
@@ -44,7 +44,6 @@ public class ProgramController
 	 * */
 	public void initiateAuthentication(String paramAction)
 	{
-		this.menuController = null;
 		this.userInputController = new UserInputController(this, paramAction);
 	}
 	
@@ -67,9 +66,14 @@ public class ProgramController
 	 * */
 	public void initiateRegistrationProcess(String paramUsername, String paramPassword, int paramCharID)
 	{
-		this.activeUsername = paramUsername;
-		this.activeCharID = paramCharID;
-		this.sendMessage(new RegisterUserMessage(paramUsername, paramPassword));
+		if((paramPassword.length() < 4) || (paramUsername.length() < 4))
+			this.rejectOperation("Benutzername und Passwort muessen jeweils mindestens 4 Zeichen lang sein!");
+		else
+		{
+			this.activeUsername = paramUsername;
+			this.activeCharID = paramCharID;
+			this.sendMessage(new RegisterUserMessage(paramUsername, paramPassword));
+		}
 	}
 	
 	/**
@@ -97,7 +101,7 @@ public class ProgramController
 	{
 		this.userInputController.getUserInputView().dispose();
 		this.userInputController = null;
-		this.showcaseController = new ShowcaseController(this, this.activeUsername, this.activeCharacter);
+		new ShowcaseController(this, this.activeUsername, this.activeCharacter);
 	}
 	
 	/**
@@ -109,7 +113,7 @@ public class ProgramController
 	private void rejectOperation(String paramMessage)
 	{
 		this.activeUsername = "";
-		System.out.println(paramMessage);
+		JOptionPane.showMessageDialog(null, paramMessage, "Achtung!", JOptionPane.WARNING_MESSAGE);
 	}
 	
 	/**
@@ -118,9 +122,8 @@ public class ProgramController
 	 * */
 	public void returnToMenu()
 	{
-		//TODO set all unused controller to null
 		this.userInputController = null;
-		this.menuController = new MenuController(this);
+		new MenuController(this);
 	}
 	
 	/**

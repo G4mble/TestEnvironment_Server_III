@@ -12,6 +12,8 @@ import java.awt.Dimension;
  * */
 public class MenuView extends JFrame
 {
+	private static final long serialVersionUID = -6694642214447151674L;
+
 	/**
 	 * creates all window components
 	 * @author Staufenberg, Thomas, 5820359

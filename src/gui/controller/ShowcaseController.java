@@ -3,16 +3,21 @@ package gui.controller;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Random;
 
 import message.Message;
 import message.SavePlayerDataMessage;
 import platform.ProgramController;
-import shared.InventoryModel;
 import shared.character.PlayerCharacter;
+import shared.item.Boots;
+import shared.item.ChestArmor;
 import shared.item.ConsumableModel;
 import shared.item.EquipmentModel;
+import shared.item.Helmet;
 import shared.item.ItemModel;
-import shared.statistics.StatisticsModel;
+import shared.item.OneHandedWeapon;
+import shared.item.Shield;
+import shared.item.TwoHandedWeapon;
 import gui.view.ShowcaseView;
 
 /**
@@ -38,6 +43,68 @@ public class ShowcaseController implements ActionListener
 		this.globalInventoryList = new ArrayList<>();
 		this.programController = paramProgramController;
 		this.showcaseView = new ShowcaseView(this, paramUsername, paramPlayer);
+	}
+	
+	private void generateNewEquipmentByID(int paramSelectionID)
+	{
+		Random randomGenerator = new Random();
+		int currentPlayerLevel = this.activePlayer.getLevel();
+		int range = currentPlayerLevel * (2 / 7);
+		int currentID = -1;
+		int currentLevelRestriction = currentPlayerLevel + randomGenerator.nextInt(2);
+		int currentAtkValue = 0;
+		int currentDefValue = 0;
+		int currentHpValue = 0;
+		if(paramSelectionID < 2)
+		{
+			currentAtkValue = (((currentLevelRestriction * 4) / 9) + 4 + randomGenerator.nextInt(range));
+			currentDefValue = ((currentLevelRestriction - 1) * (4 / 9) + 2 + randomGenerator.nextInt(range));
+			currentHpValue = (((currentLevelRestriction - 4) * (4 / 10)) + 2 + randomGenerator.nextInt(range));
+			if(randomGenerator.nextInt(100) >= 80)
+				currentDefValue *= randomGenerator.nextInt(2);
+			if(randomGenerator.nextInt(100) >= 80)
+				currentHpValue *= randomGenerator.nextInt(2);
+			if(randomGenerator.nextInt(100) >= 90)
+				currentAtkValue -= randomGenerator.nextInt((range/2));
+		}
+		else
+		{
+			currentAtkValue = ((currentLevelRestriction - 1) * (4 / 9) + 2 + randomGenerator.nextInt(range));
+			currentDefValue = (((currentLevelRestriction * 4) / 9) + 4 + randomGenerator.nextInt(range));
+			currentHpValue = (((currentLevelRestriction - 3) * (4 / 10)) + 1 + randomGenerator.nextInt(range));
+			if(randomGenerator.nextInt(100) >= 90)
+				currentDefValue -= randomGenerator.nextInt(range/2);
+			if(randomGenerator.nextInt(100) >= 90)
+				currentHpValue *= randomGenerator.nextInt(2);
+			if(randomGenerator.nextInt(100) >= 80)
+				currentAtkValue *= randomGenerator.nextInt((range/2));
+		}
+		
+		int currentGoldValue = ((currentAtkValue + currentDefValue + currentHpValue) * (currentLevelRestriction / 10));
+		
+		switch(paramSelectionID)
+		{
+			case 0:
+				this.globalInventoryList.add(new OneHandedWeapon(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue));
+				break;
+			case 1:
+				this.globalInventoryList.add(new TwoHandedWeapon(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue));
+				break;
+			case 2:
+				this.globalInventoryList.add(new Shield(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue));
+				break;
+			case 3:
+				this.globalInventoryList.add(new Helmet(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue));
+				break;
+			case 4:
+				this.globalInventoryList.add(new ChestArmor(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue));
+				break;
+			case 5:
+				this.globalInventoryList.add(new Boots(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue));
+				break;
+		}
+		
+		//TODO update GUI
 	}
 
 	/**
@@ -101,10 +168,30 @@ public class ShowcaseController implements ActionListener
 						break;
 				}
 		}
-		else
+		else if(actionCommand.startsWith("generate"))
+		{
+			switch(actionCommand.substring(9))
+			{
+				case "equip":
+					this.generateNewEquipmentByID(this.showcaseView.getSelectedEquipmentToGenerate());
+					break;
+				case "consumable":
+					break;
+				case "gold":
+					break;
+			}
+		}
+		else if(actionCommand.equals("logout"))
+		{
+			this.sendMessage(new SavePlayerDataMessage(this.activeUsername, this.activePlayer));
+			this.showcaseView.dispose();
+			this.programController.returnToMenu();
+		}
+		else if(actionCommand.equals("exit"))
 			System.exit(0);
 		
 		this.sendMessage(new SavePlayerDataMessage(this.activeUsername, this.activePlayer));
+		this.showcaseView.updateShowcaseView();
 	}
 	
 	public void sendMessage(Message paramMessage)
