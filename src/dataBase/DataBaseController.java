@@ -495,10 +495,14 @@ public class DataBaseController
 				//validate items to delete from DB
 				for(int i = 0; i < addedItemList.size(); i++)
 					for(int j = 0; j < toDeleteItemList.size(); j++)
-						if(addedItemList.get(i) == toDeleteItemList.get(j))
 						{
-							toDeleteItemList.remove(j);
-							break;
+							int addID = addedItemList.get(i);
+							int removeID = toDeleteItemList.get(j);
+							if(addID == removeID)
+							{
+								toDeleteItemList.remove(j);
+								break;
+							}
 						}
 	
 				//delete unused items from DB

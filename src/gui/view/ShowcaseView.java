@@ -7,7 +7,6 @@ import javax.swing.JFrame;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.function.Consumer;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
@@ -26,7 +25,6 @@ import javax.swing.table.TableColumnModel;
 
 import shared.InventoryModel;
 import shared.character.PlayerCharacter;
-import shared.item.Boots;
 import shared.item.ConsumableModel;
 import shared.item.EquipmentModel;
 import shared.item.ItemModel;
@@ -35,12 +33,10 @@ import shared.statistics.StatisticsModel;
 import javax.swing.JRadioButton;
 import javax.swing.SwingConstants;
 
-import java.awt.Choice;
 
 import javax.swing.JComboBox;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.JTextPane;
 import javax.swing.JList;
 
 /**
@@ -50,7 +46,7 @@ import javax.swing.JList;
 public class ShowcaseView extends JFrame
 {
 	private static final long serialVersionUID = -1847497075140092998L;
-	private JTextField txtFExperience, txtFLevel, txtFName, txtFGold, txtFArmorParts, txtfKills, txtfDeaths, txtfTimePlayed, txtfGoldEarned;
+	private JTextField txtFExperience, txtFLevel, txtFName, txtFGold, txtFArmorParts, txtfKills, txtfDeaths, txtfTimePlayed, txtfGoldEarned, txtfDef, txtfAtk, txtfLife;
 	private PlayerCharacter activeCharacter;
 	private String charName;
 	private int level, experience, goldCount, armorPartsCount, killCount, deathCount, timePlayed, goldEarned;
@@ -62,10 +58,9 @@ public class ShowcaseView extends JFrame
 	private Object[][] inventoryTableRowData = new Object[10][9], equipmentTableRowData = new Object[5][9];
 	private JTable inventoryTable, equipmentTable;
 	private ButtonGroup inventoryRadioBtnGroup, equipmentRadioBtnGroup;
-	private JComboBox<String> combEquip, combConsumable;
-	private JTextField txtfDef;
-	private JTextField txtfAtk;
-	private JTextField txtfLife;
+	private JComboBox<String> combEquip, combConsumable;	
+	private DefaultListModel<String> globalInventoryListModel;
+	private JList<String> globalInventoryJList;
 
 	/**
 	 * creates all window components
@@ -394,33 +389,8 @@ public class ShowcaseView extends JFrame
 
 //----------JList----------
 		
-		DefaultListModel<String> listModel = new DefaultListModel<>();
-		listModel.addElement("Einhandschwert");
-		listModel.addElement("Zweihandschwert");
-		listModel.addElement("Kopfschutz");
-		listModel.addElement("Heiltrank");
-		listModel.addElement("Einhandschwert");
-		listModel.addElement("Manatrank");
-		listModel.addElement("Kopfschutz");
-		listModel.addElement("Brustschutz");
-		listModel.addElement("Stiefel");
-		listModel.addElement("Schild");
-		listModel.addElement("Manatrank");
-		listModel.addElement("Brustschutz");
-		listModel.addElement("Einhandschwert");
-		listModel.addElement("Zweihandschwert");
-		listModel.addElement("Kopfschutz");
-		listModel.addElement("Heiltrank");
-		listModel.addElement("Einhandschwert");
-		listModel.addElement("Manatrank");
-		listModel.addElement("Kopfschutz");
-		listModel.addElement("Brustschutz");
-		listModel.addElement("Stiefel");
-		listModel.addElement("Schild");
-		listModel.addElement("Manatrank");
-		listModel.addElement("Brustschutz");
-
-		JList<String> globalInventoryJList = new JList<>(listModel);
+		globalInventoryListModel = new DefaultListModel<>();
+		globalInventoryJList = new JList<>(globalInventoryListModel);
 		globalInventoryJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		getContentPane().add(globalInventoryJList);
 		
@@ -744,6 +714,21 @@ public class ShowcaseView extends JFrame
 	public int getSelectedEquipmentToGenerate()
 	{
 		return this.combEquip.getSelectedIndex();
+	}
+	
+	public void addItemToGlobalInventory(String paramItemName)
+	{
+		this.globalInventoryListModel.addElement(paramItemName);
+	}
+	
+	public void removeItemFromGlobalInventory(int paramIndex)
+	{
+		this.globalInventoryListModel.remove(paramIndex);
+	}
+	
+	public int getSelectedIDFromGlobalInventory()
+	{
+		return this.globalInventoryJList.getSelectedIndex();
 	}
 	
 	public void displayErrorMessage(int paramErrorID)

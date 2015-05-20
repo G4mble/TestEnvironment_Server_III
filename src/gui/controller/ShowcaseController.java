@@ -47,9 +47,11 @@ public class ShowcaseController implements ActionListener
 	
 	private void generateNewEquipmentByID(int paramSelectionID)
 	{
+		//TODO update all values as (double)
+		
 		Random randomGenerator = new Random();
 		int currentPlayerLevel = this.activePlayer.getLevel();
-		int range = currentPlayerLevel * (2 / 7);
+		int range = (int) (((double) 5 / (double) 7) + ((double) currentPlayerLevel * ((double) 2 / (double) 7)));
 		int currentID = -1;
 		int currentLevelRestriction = currentPlayerLevel + randomGenerator.nextInt(2);
 		int currentAtkValue = 0;
@@ -64,8 +66,8 @@ public class ShowcaseController implements ActionListener
 				currentDefValue *= randomGenerator.nextInt(2);
 			if(randomGenerator.nextInt(100) >= 80)
 				currentHpValue *= randomGenerator.nextInt(2);
-			if(randomGenerator.nextInt(100) >= 90)
-				currentAtkValue -= randomGenerator.nextInt((range/2));
+			if(randomGenerator.nextInt(100) >= 0)
+				currentAtkValue -= randomGenerator.nextInt(((int) Math.round((double)range/(double)2)));
 		}
 		else
 		{
@@ -73,38 +75,41 @@ public class ShowcaseController implements ActionListener
 			currentDefValue = (((currentLevelRestriction * 4) / 9) + 4 + randomGenerator.nextInt(range));
 			currentHpValue = (((currentLevelRestriction - 3) * (4 / 10)) + 1 + randomGenerator.nextInt(range));
 			if(randomGenerator.nextInt(100) >= 90)
-				currentDefValue -= randomGenerator.nextInt(range/2);
+				currentDefValue -= randomGenerator.nextInt(((int) Math.round((double)range/(double)2)));
 			if(randomGenerator.nextInt(100) >= 90)
 				currentHpValue *= randomGenerator.nextInt(2);
 			if(randomGenerator.nextInt(100) >= 80)
-				currentAtkValue *= randomGenerator.nextInt((range/2));
+				currentAtkValue *= randomGenerator.nextInt((2));
 		}
 		
 		int currentGoldValue = ((currentAtkValue + currentDefValue + currentHpValue) * (currentLevelRestriction / 10));
 		
+		ItemModel currentItem = null;
+		
 		switch(paramSelectionID)
 		{
 			case 0:
-				this.globalInventoryList.add(new OneHandedWeapon(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue));
+				currentItem = new OneHandedWeapon(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue);
 				break;
 			case 1:
-				this.globalInventoryList.add(new TwoHandedWeapon(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue));
+				currentItem = new TwoHandedWeapon(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue);
 				break;
 			case 2:
-				this.globalInventoryList.add(new Shield(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue));
+				currentItem = new Shield(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue);
 				break;
 			case 3:
-				this.globalInventoryList.add(new Helmet(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue));
+				currentItem = new Helmet(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue);
 				break;
 			case 4:
-				this.globalInventoryList.add(new ChestArmor(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue));
+				currentItem = new ChestArmor(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue);
 				break;
 			case 5:
-				this.globalInventoryList.add(new Boots(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue));
+				currentItem = new Boots(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue);
 				break;
 		}
 		
-		//TODO update GUI
+		this.globalInventoryList.add(currentItem);
+		this.showcaseView.addItemToGlobalInventory(currentItem.getItemName());
 	}
 
 	/**
@@ -122,7 +127,8 @@ public class ShowcaseController implements ActionListener
 				switch(actionCommand.substring(10))
 				{
 					case "dropItem":
-						currentItem.drop(this.activePlayer, this.globalInventoryList);					
+						currentItem.drop(this.activePlayer, this.globalInventoryList);
+						this.showcaseView.addItemToGlobalInventory(currentItem.getItemName());
 						break;
 					case "equipItem":
 						if(currentItem instanceof EquipmentModel)
@@ -155,6 +161,7 @@ public class ShowcaseController implements ActionListener
 				{
 					case "dropItem":
 						currentItem.drop(this.activePlayer, this.globalInventoryList);
+						this.showcaseView.addItemToGlobalInventory(currentItem.getItemName());
 						break;
 					case "sellItem":
 						currentItem.sell(this.activePlayer);
@@ -179,6 +186,22 @@ public class ShowcaseController implements ActionListener
 					break;
 				case "gold":
 					break;
+			}
+			//TODO update GUI
+		}
+		else if(actionCommand.equals("pickup"))
+		{
+			int itemIndex = this.showcaseView.getSelectedIDFromGlobalInventory(); 
+			if(itemIndex != -1)
+			{
+				ItemModel currentItem = this.globalInventoryList.get(itemIndex);
+				if(currentItem.pickup(this.activePlayer))
+				{
+					this.globalInventoryList.remove(itemIndex);
+					this.showcaseView.removeItemFromGlobalInventory(itemIndex);
+				}
+				else
+					this.showcaseView.displayErrorMessage(4);
 			}
 		}
 		else if(actionCommand.equals("logout"))

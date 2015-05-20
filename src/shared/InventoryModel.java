@@ -59,7 +59,7 @@ public class InventoryModel
 			}
 		else if(paramItem instanceof GoldStack)
 			this.modifyGoldCount(paramItem.getItemGoldValue());
-		else if(this.inventoryContentList.size() <= INVENTORY_SIZE)
+		else if(this.inventoryContentList.size() < INVENTORY_SIZE)
 			this.inventoryContentList.add(paramItem);
 		else
 			return false;
