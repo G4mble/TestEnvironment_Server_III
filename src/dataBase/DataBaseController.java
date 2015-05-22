@@ -361,15 +361,22 @@ public class DataBaseController
 		try(Statement stmt = this.dbConnection.createStatement())
 		{
 			if(paramID != paramItemResult.getInt(1))
-			{				
+			{
 				if(paramID == -1)
 				{
-					stmt.executeUpdate("INSERT INTO item(equipSlot, attackValue, defenseValue, hpValue, levelRestriction, itemPrice, armorPartsRevenue) VALUES(" + currentEquip.getEquipSlotID() + ", " + currentEquip.getAttackValue() + ", " + currentEquip.getDefenseValue() + ", " + currentEquip.getHpValue() + ", " + currentEquip.getLevelRestriction() + ", " + currentEquip.getItemGoldValue() + ", " + currentEquip.getArmorPartsRevenue() + ")");
+					int currentEquipSlotID = -1;
+					if(currentEquip instanceof TwoHandedWeapon)
+						currentEquipSlotID = 5;
+					else
+						currentEquipSlotID = currentEquip.getEquipSlotID();
+					
+					stmt.executeUpdate("INSERT INTO item(equipSlot, attackValue, defenseValue, hpValue, levelRestriction, itemPrice, armorPartsRevenue) VALUES(" + currentEquipSlotID + ", " + currentEquip.getAttackValue() + ", " + currentEquip.getDefenseValue() + ", " + currentEquip.getHpValue() + ", " + currentEquip.getLevelRestriction() + ", " + currentEquip.getItemGoldValue() + ", " + currentEquip.getArmorPartsRevenue() + ")");
 					try(ResultSet newItemIDResult = stmt.executeQuery("SELECT max(itemID) FROM item"))
 					{
 						newItemIDResult.next();
 						paramID = newItemIDResult.getInt(1);
 					}
+					currentEquip.setItemID(paramID);
 				}
 				stmt.executeUpdate("UPDATE inventoryItemAllocation SET itemID = " + paramID + " WHERE allocationID = " + paramItemResult.getInt(2));
 				

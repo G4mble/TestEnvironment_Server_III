@@ -6,7 +6,7 @@ import shared.item.ConsumableModel;
 import shared.item.EquipmentModel;
 import shared.item.GoldStack;
 import shared.item.ItemModel;
-import shared.item.Weapon;
+import shared.item.TwoHandedWeapon;
 
 /**
  * model class for player inventory, stores all inventory related data
@@ -16,6 +16,7 @@ public class InventoryModel
 {
 	private int goldCount, armorPartsCount;				//armorParts are used as crafting material, can be gained by salvaging equipment
 	private final int INVENTORY_SIZE = 10;
+	private boolean isTwoHandEquipped = false;
 	private ArrayList<ItemModel> inventoryContentList;
 	private EquipmentModel[] equipmentList;							//equipSlotIDs: weaponHand: 0 ; shieldHand: 1 ; helmet: 2 ; chest: 3 ; boots: 4
 	
@@ -29,6 +30,8 @@ public class InventoryModel
 		this.armorPartsCount = paramArmorPartsCount;
 		this.inventoryContentList = paramInventoryContentList;
 		this.equipmentList = paramEquipmentList;
+		if(this.equipmentList[0] instanceof TwoHandedWeapon)
+			this.isTwoHandEquipped = true;
 	}
 	
 	/**
@@ -83,21 +86,42 @@ public class InventoryModel
 	 * adds the previously equipped item to the inventory if not null
 	 * @param paramItem the EquipmentModel to be equipped
 	 * @param paramSlotID ID of the slot where the item is to be equipped
+	 * @return true: item successfully equipped</br>false: inventory full
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	public void equipItem(EquipmentModel paramItem)
+	public boolean equipItem(EquipmentModel paramItem)
 	{
-		EquipmentModel previousItem = this.equipmentList[paramItem.getEquipSlotID()];
-		this.equipmentList[paramItem.getEquipSlotID()] = paramItem;
-		this.removeItemFromInventory(paramItem);
-		if(previousItem != null)
-			this.addItemToInventory(previousItem);
+		if((paramItem instanceof TwoHandedWeapon) && (this.inventoryContentList.size() > (this.INVENTORY_SIZE - 1) && (this.equipmentList[0] != null) && (this.equipmentList[1] != null)))
+			return false;
+		else
+		{
+			EquipmentModel previousItem = this.equipmentList[paramItem.getEquipSlotID()];
+			this.equipmentList[paramItem.getEquipSlotID()] = paramItem;
+			this.removeItemFromInventory(paramItem);
+			
+			if(this.isTwoHandEquipped && (paramItem.getEquipSlotID() == 1))
+				this.removeItemFromEquip(this.equipmentList[0], true);
+			
+			if(previousItem != null)
+			{
+				this.addItemToInventory(previousItem);
+				if(previousItem instanceof TwoHandedWeapon)
+					this.isTwoHandEquipped = false;
+			}
+			
+			if(paramItem instanceof TwoHandedWeapon)
+			{
+				this.isTwoHandEquipped = true;
+				if(this.equipmentList[1] != null)
+					this.removeItemFromEquip(this.equipmentList[1], true);
+			}
+			return true;
+		}
 	}
 	
 	/**
 	 * tries to add the given Item to the inventory</br>
 	 * removes the Item from the equipment if the previous operation returned true</br>
-	 * if Item is a Weapon && Weapon.isTwoHand == true -> the weapon is also removed from the shieldHand: slot 1
 	 * @param paramItem the Item to be removed
 	 * @param paramAddToInventory wheter the item should be added to the inventory (true) or not (false)
 	 * @return true: Item successfully removed and added to the inventory</br>false: inventory full
@@ -110,8 +134,8 @@ public class InventoryModel
 				return false;
 		
 		this.equipmentList[paramItem.getEquipSlotID()] = null;
-		if((paramItem instanceof Weapon) && (((Weapon) paramItem).isTwoHand()))
-			this.equipmentList[paramItem.getEquipSlotID() + 1] = null;
+		if(paramItem instanceof TwoHandedWeapon)
+			this.isTwoHandEquipped = false;
 		return true;
 	}
 	

@@ -15,7 +15,8 @@ import shared.character.PlayerCharacter;
  * */
 public abstract class ItemModel
 {
-	private int itemID, itemGoldValue;				//itemID is required to be -1 if the item is newly created (DB indicator)
+	protected int itemID;							//itemID is required to be -1 if the item is newly created (DB indicator)
+	private int itemGoldValue;
 	private String itemName, itemImagePath;			//itemImagePath is required for DB storage
 	private int xPos, yPos;							//only required when put into globalInventory
 	private Image itemImage;

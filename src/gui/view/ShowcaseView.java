@@ -682,6 +682,8 @@ public class ShowcaseView extends JFrame
 		txtFExperience.setText(Integer.toString(this.experience));
 		
 		this.initiateJTables();
+		
+		globalInventoryJList.setSelectedIndex(0);
 	}
 	
 	public ItemModel getSelectedItemFromInventory()

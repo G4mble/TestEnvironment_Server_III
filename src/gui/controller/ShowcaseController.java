@@ -47,8 +47,6 @@ public class ShowcaseController implements ActionListener
 	
 	private void generateNewEquipmentByID(int paramSelectionID)
 	{
-		//TODO update all values as (double)
-		
 		Random randomGenerator = new Random();
 		int currentPlayerLevel = this.activePlayer.getLevel();
 		int range = (int) (((double) 5 / (double) 7) + ((double) currentPlayerLevel * ((double) 2 / (double) 7)));
@@ -57,23 +55,28 @@ public class ShowcaseController implements ActionListener
 		int currentAtkValue = 0;
 		int currentDefValue = 0;
 		int currentHpValue = 0;
+		
+		//calculat values for weapons
 		if(paramSelectionID < 2)
 		{
-			currentAtkValue = (((currentLevelRestriction * 4) / 9) + 4 + randomGenerator.nextInt(range));
-			currentDefValue = ((currentLevelRestriction - 1) * (4 / 9) + 2 + randomGenerator.nextInt(range));
-			currentHpValue = (((currentLevelRestriction - 4) * (4 / 10)) + 2 + randomGenerator.nextInt(range));
+			currentAtkValue = (int)(((double)(currentLevelRestriction * 4) / (double)9) + 4 + randomGenerator.nextInt(range));
+			currentDefValue = (int)((double)(currentLevelRestriction - 1) * (double)((double)4 / (double)9) + 2 + randomGenerator.nextInt(range));
+			currentHpValue = (int)(((double)(currentLevelRestriction - 4) * (double)((double)4 / (double)10)) + 2 + randomGenerator.nextInt(range));
 			if(randomGenerator.nextInt(100) >= 80)
 				currentDefValue *= randomGenerator.nextInt(2);
 			if(randomGenerator.nextInt(100) >= 80)
 				currentHpValue *= randomGenerator.nextInt(2);
-			if(randomGenerator.nextInt(100) >= 0)
+			if(randomGenerator.nextInt(100) >= 90)
 				currentAtkValue -= randomGenerator.nextInt(((int) Math.round((double)range/(double)2)));
+			if(paramSelectionID == 1)
+				currentAtkValue *= (Math.round(((double)2 - (double)randomGenerator.nextDouble())));
 		}
+		//calculate values for equipment that is not a weapon
 		else
 		{
-			currentAtkValue = ((currentLevelRestriction - 1) * (4 / 9) + 2 + randomGenerator.nextInt(range));
-			currentDefValue = (((currentLevelRestriction * 4) / 9) + 4 + randomGenerator.nextInt(range));
-			currentHpValue = (((currentLevelRestriction - 3) * (4 / 10)) + 1 + randomGenerator.nextInt(range));
+			currentAtkValue = (int)((double)(currentLevelRestriction - 1) * (double)((double)4 / (double)9) + 2 + randomGenerator.nextInt(range));
+			currentDefValue = (int)(((double)(currentLevelRestriction * 4) / (double)9) + 4 + randomGenerator.nextInt(range));
+			currentHpValue = (int)(((double)(currentLevelRestriction - 3) * (double)((double)4 / (double)10)) + 1 + randomGenerator.nextInt(range));
 			if(randomGenerator.nextInt(100) >= 90)
 				currentDefValue -= randomGenerator.nextInt(((int) Math.round((double)range/(double)2)));
 			if(randomGenerator.nextInt(100) >= 90)
@@ -82,7 +85,7 @@ public class ShowcaseController implements ActionListener
 				currentAtkValue *= randomGenerator.nextInt((2));
 		}
 		
-		int currentGoldValue = ((currentAtkValue + currentDefValue + currentHpValue) * (currentLevelRestriction / 10));
+		int currentGoldValue = (int)((double)(currentAtkValue + currentDefValue + currentHpValue) * (double)((double)currentLevelRestriction / (double)10) + 1);
 		
 		ItemModel currentItem = null;
 		
@@ -107,7 +110,6 @@ public class ShowcaseController implements ActionListener
 				currentItem = new Boots(currentID, currentGoldValue, currentLevelRestriction, currentAtkValue, currentDefValue, currentHpValue);
 				break;
 		}
-		
 		this.globalInventoryList.add(currentItem);
 		this.showcaseView.addItemToGlobalInventory(currentItem.getItemName());
 	}
@@ -132,7 +134,10 @@ public class ShowcaseController implements ActionListener
 						break;
 					case "equipItem":
 						if(currentItem instanceof EquipmentModel)
-							((EquipmentModel) currentItem).equip(this.activePlayer);
+						{
+							if(!(((EquipmentModel) currentItem).equip(this.activePlayer)))
+								this.showcaseView.displayErrorMessage(4);
+						}
 						else
 							this.showcaseView.displayErrorMessage(1);
 						break;
@@ -187,7 +192,6 @@ public class ShowcaseController implements ActionListener
 				case "gold":
 					break;
 			}
-			//TODO update GUI
 		}
 		else if(actionCommand.equals("pickup"))
 		{

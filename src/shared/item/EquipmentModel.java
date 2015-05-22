@@ -28,11 +28,15 @@ public abstract class EquipmentModel extends ItemModel
 	}
 	
 	/**
-	 * abstract method to move the current item to the given players equipment
+	 * equips the current item to the given players equipment
 	 * @param paramPlayer PlayerCharacter model of the player equipping the item
+	 * @return true: item successfully added</br>false: inventory full
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	public abstract void equip(PlayerCharacter paramPlayer);
+	public boolean equip(PlayerCharacter paramPlayer)
+	{
+		return paramPlayer.getInventory().equipItem(this);
+	}
 	
 	/**
 	 * calculates the amount of armorParts gained by salvaging the current item
@@ -134,4 +138,13 @@ public abstract class EquipmentModel extends ItemModel
 		return this.equipSlotID;
 	}
 
+	/**
+	 * overwrites the current itemID in ItemModel with the given one
+	 * @param paramID the ID to be set
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	public void setItemID(int paramID)
+	{
+		super.itemID = paramID;
+	}
 }
