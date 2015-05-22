@@ -41,7 +41,7 @@ public class DataBaseController
 	/**
 	 * private constructor to guarantee only one instance of this class at a time</br>
 	 * tries to connect to the DB to see if it is there, switches to noDB mode if an error occurs</br>
-	 * initialises the database if not already done
+	 * initializes the database if not already done
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	private DataBaseController(ProgramController paramProgramController)
