@@ -2,6 +2,9 @@ package shared;
 
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
+
+import shared.character.PlayerCharacter;
 import shared.item.ConsumableModel;
 import shared.item.EquipmentModel;
 import shared.item.GoldStack;
@@ -19,6 +22,7 @@ public class InventoryModel
 	private boolean isTwoHandEquipped = false;
 	private ArrayList<ItemModel> inventoryContentList;
 	private EquipmentModel[] equipmentList;							//equipSlotIDs: weaponHand: 0 ; shieldHand: 1 ; helmet: 2 ; chest: 3 ; boots: 4
+	private PlayerCharacter owningCharacter;
 	
 	/**
 	 * stores given parameters in global variables
@@ -41,9 +45,35 @@ public class InventoryModel
 	public InventoryModel()
 	{
 		//TODO set final values: gold, maybe default equipment?
-		this(1234, 0, new ArrayList<ItemModel>(), new EquipmentModel[5]);
+		this(50, 0, new ArrayList<ItemModel>(), new EquipmentModel[5]);
 	}
 	
+	private void modifyPlayerAttributes(EquipmentModel paramEquipment, boolean paramModifyPositive)
+	{
+		int currentMaxLife = this.owningCharacter.getMaximumLife();
+		int currentAtk = this.owningCharacter.getAttack();
+		int currentDef = this.owningCharacter.getDefense();
+		
+		if(paramModifyPositive)
+		{
+			currentMaxLife += paramEquipment.getHpValue();
+			currentAtk += paramEquipment.getAttackValue();
+			currentDef += paramEquipment.getDefenseValue();
+		}
+		else
+		{
+			currentMaxLife -= paramEquipment.getHpValue();
+			currentAtk -= paramEquipment.getAttackValue();
+			currentDef -= paramEquipment.getDefenseValue();
+		}
+		
+		this.owningCharacter.setMaximumLife(currentMaxLife);
+		this.owningCharacter.setAttack(currentAtk);
+		this.owningCharacter.setDefense(currentDef);
+		
+		if(this.owningCharacter.getCurrentLife() > currentMaxLife)
+			this.owningCharacter.resetCurrentLife();
+	}
 	
 	/**
 	 * tries to add given item to the inventoryContentList
@@ -54,12 +84,21 @@ public class InventoryModel
 	public boolean addItemToInventory(ItemModel paramItem)
 	{
 		if(paramItem instanceof ConsumableModel)
+		{
+			boolean isExisting = false;
 			for(int i = 0; i < this.inventoryContentList.size(); i++)
 			{
-				ConsumableModel currentItem = (ConsumableModel) this.inventoryContentList.get(i);
+				ItemModel currentItem = this.inventoryContentList.get(i);
 				if(currentItem.getItemID() == paramItem.getItemID())
-					currentItem.increaseStackSize(((ConsumableModel) paramItem).getStackSize());
+				{
+					((ConsumableModel)currentItem).increaseStackSize(((ConsumableModel) paramItem).getStackSize());
+					isExisting = true;
+					break;
+				}
 			}
+			if((!isExisting) && (this.inventoryContentList.size() < INVENTORY_SIZE))
+				this.inventoryContentList.add(paramItem);
+		}
 		else if(paramItem instanceof GoldStack)
 			this.modifyGoldCount(paramItem.getItemGoldValue());
 		else if(this.inventoryContentList.size() < INVENTORY_SIZE)
@@ -86,18 +125,19 @@ public class InventoryModel
 	 * adds the previously equipped item to the inventory if not null
 	 * @param paramItem the EquipmentModel to be equipped
 	 * @param paramSlotID ID of the slot where the item is to be equipped
-	 * @return true: item successfully equipped</br>false: inventory full
+	 * @return true: item successfully equipped</br>false: inventory full or characterLevel too low
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	public boolean equipItem(EquipmentModel paramItem)
 	{
 		if((paramItem instanceof TwoHandedWeapon) && (this.inventoryContentList.size() > (this.INVENTORY_SIZE - 1) && (this.equipmentList[0] != null) && (this.equipmentList[1] != null)))
-			return false;
-		else
+			JOptionPane.showMessageDialog(null, "Ihr Inventar ist voll!", "Achtung!", JOptionPane.WARNING_MESSAGE);
+		else if(paramItem.getLevelRestriction() <= this.owningCharacter.getLevel())
 		{
 			EquipmentModel previousItem = this.equipmentList[paramItem.getEquipSlotID()];
 			this.equipmentList[paramItem.getEquipSlotID()] = paramItem;
 			this.removeItemFromInventory(paramItem);
+			this.modifyPlayerAttributes(paramItem, true);
 			
 			if(this.isTwoHandEquipped && (paramItem.getEquipSlotID() == 1))
 				this.removeItemFromEquip(this.equipmentList[0], true);
@@ -105,6 +145,7 @@ public class InventoryModel
 			if(previousItem != null)
 			{
 				this.addItemToInventory(previousItem);
+				this.modifyPlayerAttributes(previousItem, false);
 				if(previousItem instanceof TwoHandedWeapon)
 					this.isTwoHandEquipped = false;
 			}
@@ -117,6 +158,9 @@ public class InventoryModel
 			}
 			return true;
 		}
+		else
+			JOptionPane.showMessageDialog(null, "Ihr Level ist zu niedrig um dieses Item auszuruesten!", "Achtung!", JOptionPane.WARNING_MESSAGE);
+		return false;
 	}
 	
 	/**
@@ -136,6 +180,7 @@ public class InventoryModel
 		this.equipmentList[paramItem.getEquipSlotID()] = null;
 		if(paramItem instanceof TwoHandedWeapon)
 			this.isTwoHandEquipped = false;
+		this.modifyPlayerAttributes(paramItem, false);
 		return true;
 	}
 	
@@ -150,6 +195,7 @@ public class InventoryModel
 		if(!(this.removeItemFromInventory(paramItem)))
 		{
 			this.removeItemFromEquip(paramItem, false);
+			this.modifyPlayerAttributes(paramItem, false);
 		}
 		this.modifyArmorPartsCount(paramItem.getArmorPartsRevenue());
 	}
@@ -164,6 +210,7 @@ public class InventoryModel
 		if(!(this.removeItemFromInventory(paramItem)))
 		{
 			this.removeItemFromEquip((EquipmentModel)paramItem, false);
+			this.modifyPlayerAttributes((EquipmentModel)paramItem, false);
 		}
 		this.modifyGoldCount(paramItem.getItemGoldValue());
 	}
@@ -241,5 +288,22 @@ public class InventoryModel
 	public void setEquipmentList(EquipmentModel[] paramEquipmentList)
 	{
 		this.equipmentList = paramEquipmentList;
+	}
+
+	public void initiatePlayerAttributes()
+	{
+		for(int i = 0; i < this.equipmentList.length; i++)
+		{
+			EquipmentModel currentEquipment = this.equipmentList[i];
+			if(!(currentEquipment == null))
+				this.modifyPlayerAttributes(currentEquipment, true);
+		}
+		if(this.owningCharacter.getCurrentLife() < this.owningCharacter.getMaximumLife())
+			this.owningCharacter.setCurrentLife(this.owningCharacter.getMaximumLife());
+	}
+	
+	public void setOwner(PlayerCharacter paramOwner)
+	{
+		this.owningCharacter = paramOwner;
 	}
 }

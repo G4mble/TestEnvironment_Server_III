@@ -15,7 +15,7 @@ public abstract class EquipmentModel extends ItemModel
 	 * stores remaining parameters in global variables
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	public EquipmentModel(int paramID, int paramGoldValue, String paramName, String paramImagePath, int paramLvlRestr, int paramAtkValue, int paramDefValue, int paramHpValue, int paramEquipSlotID)
+	public EquipmentModel(int paramID, int paramGoldValue, String paramName, String paramImagePath, int paramLvlRestr, int paramAtkValue, int paramDefValue, int paramHpValue, int paramEquipSlotID, int paramArmorPartsRevenue)
 	{
 		super(paramID, paramGoldValue, paramName, paramImagePath);
 		
@@ -24,7 +24,10 @@ public abstract class EquipmentModel extends ItemModel
 		this.defenseValue = paramDefValue;
 		this.hpValue = paramHpValue;
 		this.equipSlotID = paramEquipSlotID;
-		this.armorPartsRevenue = this.calculateArmorPartsRevenue();
+		if(paramArmorPartsRevenue == -1)
+			this.armorPartsRevenue = this.calculateArmorPartsRevenue();
+		else
+			this.armorPartsRevenue = paramArmorPartsRevenue;
 	}
 	
 	/**
@@ -44,8 +47,8 @@ public abstract class EquipmentModel extends ItemModel
 	 * */
 	private int calculateArmorPartsRevenue()
 	{
-		//TODO insert magic formula to calculate armorPartsRevenue, propably depending on levelRestriction
-		return 1;
+		int calculationResult = this.levelRestriction / 5;
+		return (Math.max(1, calculationResult));
 	}
 	
 	/**

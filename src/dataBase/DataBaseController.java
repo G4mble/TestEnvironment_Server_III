@@ -11,7 +11,9 @@ import java.util.ArrayList;
 import platform.ProgramController;
 import message.*;
 import shared.InventoryModel;
+import shared.character.Mage;
 import shared.character.PlayerCharacter;
+import shared.character.Warrior;
 import shared.item.Boots;
 import shared.item.ChestArmor;
 import shared.item.ConsumableModel;
@@ -257,17 +259,17 @@ public class DataBaseController
 		switch(paramItemResult.getInt(3))
 		{
 			case 0: 
-				return new OneHandedWeapon(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6));
+				return new OneHandedWeapon(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6), paramItemResult.getInt(9));
 			case 1:
-				return new Shield(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6));
+				return new Shield(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6), paramItemResult.getInt(9));
 			case 2:
-				return new Helmet(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6));
+				return new Helmet(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6), paramItemResult.getInt(9));
 			case 3:
-				return new ChestArmor(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6));
+				return new ChestArmor(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6), paramItemResult.getInt(9));
 			case 4:
-				return new Boots(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6));
+				return new Boots(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6), paramItemResult.getInt(9));
 			case 5:				//two handed weapons are indentified in the database by ID 5 but in the code via boolean isTwoHand = true AND slotID = 0
-				return new TwoHandedWeapon(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6));
+				return new TwoHandedWeapon(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6), paramItemResult.getInt(9));
 			case 6:				//HealthPotion is indicated by equipSlot = 6
 				return new HealthPotion(paramInventoryResult.getInt(3));
 			case 7:				//ManaPotion is indicated by equipSlot = 7
@@ -296,7 +298,7 @@ public class DataBaseController
 				Statement statisticsStmt = this.dbConnection.createStatement(); ResultSet statisticsResult = statisticsStmt.executeQuery("SELECT monsterKillCount, numberOfDeaths, goldEarned, timePlayed FROM statistics WHERE statisticsID = " + retrieveIDResult.getInt(4));
 				Statement saveGameStmt = this.dbConnection.createStatement(); ResultSet saveGameResult = saveGameStmt.executeQuery("SELECT currentStoryLevel FROM saveGame WHERE saveGameID = " + retrieveIDResult.getInt(3));
 				Statement inventoryStmt = this.dbConnection.createStatement(); ResultSet inventoryResult = inventoryStmt.executeQuery("SELECT goldCount, armorPartsCount, healthPotionCount, manaPotionCount FROM inventory WHERE inventoryID = " + retrieveIDResult.getInt(2));
-				Statement itemStmt = this.dbConnection.createStatement(); ResultSet itemResult = itemStmt.executeQuery("SELECT alloc.slotID, item.itemID, equipSlot, attackValue, defenseValue, hpValue, levelRestriction, itemPrice FROM (SELECT slotID, itemID FROM inventoryItemAllocation WHERE inventoryID = " + retrieveIDResult.getInt(2) + ") AS alloc JOIN item ON alloc.itemID = item.itemID ORDER BY alloc.slotID"))
+				Statement itemStmt = this.dbConnection.createStatement(); ResultSet itemResult = itemStmt.executeQuery("SELECT alloc.slotID, item.itemID, equipSlot, attackValue, defenseValue, hpValue, levelRestriction, itemPrice, armorPartsRevenue FROM (SELECT slotID, itemID FROM inventoryItemAllocation WHERE inventoryID = " + retrieveIDResult.getInt(2) + ") AS alloc JOIN item ON alloc.itemID = item.itemID ORDER BY alloc.slotID"))
 			{
 				//TODO do something with saveGameData			
 				saveGameResult.next();
@@ -329,7 +331,17 @@ public class DataBaseController
 				
 				//create new player, link with inventory, statistics
 				playerResult.next();
-				return new PlayerCharacter(paramClientID, playerResult.getInt(6), playerResult.getInt(7), playerResult.getInt(3), playerResult.getInt(4), playerResult.getInt(5), retrieveIDResult.getInt(1), playerResult.getString(2), -1, -1, true, playerResult.getString(1), currentInventory, currentStatistics);
+				PlayerCharacter currentPlayer = null;
+				switch(playerResult.getString(2))
+				{
+					case "Krieger":
+						currentPlayer = new Warrior(paramClientID, playerResult.getInt(6), playerResult.getInt(7), playerResult.getInt(3), playerResult.getInt(4), playerResult.getInt(5), retrieveIDResult.getInt(1), playerResult.getString(2), playerResult.getString(1), currentInventory, currentStatistics);
+						break;
+					case "Magier":
+						currentPlayer = new Mage(paramClientID, playerResult.getInt(6), playerResult.getInt(7), playerResult.getInt(3), playerResult.getInt(4), playerResult.getInt(5), retrieveIDResult.getInt(1), playerResult.getString(2), playerResult.getString(1), currentInventory, currentStatistics);
+						break;
+				}
+				return currentPlayer;
 			}
 		}
 		catch(SQLException sqlE)
@@ -380,10 +392,10 @@ public class DataBaseController
 				}
 				stmt.executeUpdate("UPDATE inventoryItemAllocation SET itemID = " + paramID + " WHERE allocationID = " + paramItemResult.getInt(2));
 				
-				paramAddedItemList.add(paramID);
-				if(paramItemResult.getInt(1) != 1)
+				if(paramItemResult.getInt(1) > 3)
 					paramToDeleteItemList.add(paramItemResult.getInt(1));
 			}
+			paramAddedItemList.add(paramID);
 		}
 	}
 	
@@ -391,11 +403,9 @@ public class DataBaseController
 	{
 		try(Statement stmt = this.dbConnection.createStatement())
 		{
-			if(paramItemResult.getInt(1) != 1)
-			{
-				stmt.executeUpdate("UPDATE inventoryItemAllocation SET itemID = 1 WHERE allocationID = " + paramItemResult.getInt(2) );
+			stmt.executeUpdate("UPDATE inventoryItemAllocation SET itemID = 1 WHERE allocationID = " + paramItemResult.getInt(2) );
+			if(paramItemResult.getInt(1) > 3)
 				paramToDeleteItemList.add(paramItemResult.getInt(1));
-			}
 		}
 		catch(SQLException sqlE)
 		{
@@ -440,6 +450,8 @@ public class DataBaseController
 				//update items stored in inventory
 				ArrayList<Integer> toDeleteItemList = new ArrayList<>();
 				ArrayList<Integer> addedItemList = new ArrayList<>();
+				boolean hasHealthPotion = false;
+				boolean hasManaPotion = false;
 				
 				for(int i = 0; i < currentInventory.getInventorySize(); i++)
 				{
@@ -456,18 +468,19 @@ public class DataBaseController
 							{
 								stmt.executeUpdate("UPDATE inventory SET healthPotionCount = " + ((HealthPotion) currentItem).getStackSize() + " WHERE inventoryID = " + retrieveIDResult.getInt(2));
 								tmpID = 2;
+								hasHealthPotion = true;
 							}
 							else if(currentItem instanceof ManaPotion)
 							{
 								stmt.executeUpdate("UPDATE inventory SET manaPotionCount = " + ((ManaPotion) currentItem).getStackSize() + " WHERE inventoryID = " + retrieveIDResult.getInt(2));
 								tmpID = 3;
+								hasManaPotion = true;
 							}
 							stmt.executeUpdate("UPDATE inventoryItemAllocation SET itemID = " + tmpID + " WHERE allocationID = " + itemResult.getInt(2));
-							if(itemResult.getInt(1) != 1)
+							if(itemResult.getInt(1) > 3)
 									toDeleteItemList.add(itemResult.getInt(1));
 							continue;
 						}
-	
 						this.saveEquipment(addedItemList, toDeleteItemList, itemResult, currentID, currentItem);
 					}
 					catch(IndexOutOfBoundsException iOoBE)
@@ -480,6 +493,13 @@ public class DataBaseController
 						}
 						// exit main loop
 						break;
+					}
+					finally
+					{
+						if(!hasHealthPotion)
+							stmt.executeUpdate("UPDATE inventory SET healthPotionCount = 0 WHERE inventoryID = " + retrieveIDResult.getInt(2));
+						if(!hasManaPotion)
+							stmt.executeUpdate("UPDATE inventory SET manaPotionCount = 0 WHERE inventoryID = " + retrieveIDResult.getInt(2));
 					}
 				}
 				
@@ -683,7 +703,7 @@ public class DataBaseController
 			{
 				this.dbConnection.setAutoCommit(false);				// begin transaction
 
-				stmt.executeUpdate("INSERT INTO player(charImg, charName, hitpoints, attackValue, defenseValue) VALUES('" + paramPlayer.getImagePath() + "', '" + paramPlayer.getCharacterName() + "', " + paramPlayer.getLife() + ", " + paramPlayer.getAttack() + ", " + paramPlayer.getDefense() + ")");
+				stmt.executeUpdate("INSERT INTO player(charImg, charName, hitpoints, attackValue, defenseValue) VALUES('" + paramPlayer.getImagePath() + "', '" + paramPlayer.getCharacterName() + "', " + paramPlayer.getCurrentLife() + ", " + paramPlayer.getAttack() + ", " + paramPlayer.getDefense() + ")");
 
 				try (ResultSet playerIDResult = stmt.executeQuery("SELECT max(playerID) FROM player"))
 				{

@@ -55,6 +55,7 @@ public class PlayerCharacter extends CombatantModel{
 		this.level=level;
 		this.inventory = inventory;
 		this.statistics = statistics;
+		this.inventory.setOwner(this);
 	}
 	private int act;
 	/**

@@ -14,10 +14,15 @@ public class Warrior extends PlayerCharacter
 
 	public Warrior(int clientId)
 	{
-		super(clientId, 1, 0, 100, 7, 3, 345, "Krieger", -1, -1, true, "krieger.png", new InventoryModel(), new StatisticsModel());
+		this(clientId, 19, 0, 100, 7, 3, 345, "Krieger", "krieger.png", new InventoryModel(), new StatisticsModel());
 		this.generateDefaultEquipment();
 	}
 	
+	public Warrior(int clientId, int level, int experiencePoints, int life, int attack, int defense, int characterId, String characterName, String imagePath, InventoryModel inventory, StatisticsModel statistics)
+	{
+		super(clientId, level, experiencePoints, life, attack, defense, characterId, characterName, -1, -1, true, imagePath, inventory, statistics);
+	}
+
 	private void generateDefaultEquipment()
 	{
 		EquipmentModel[] defaultEquip = new EquipmentModel[5];
@@ -28,5 +33,4 @@ public class Warrior extends PlayerCharacter
 		defaultEquip[4] = new Boots(-1, 1, 1, 0, 1, 1);
 		this.getInventory().setEquipmentList(defaultEquip);
 	}
-
 }

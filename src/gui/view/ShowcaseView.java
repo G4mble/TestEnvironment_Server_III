@@ -49,18 +49,19 @@ public class ShowcaseView extends JFrame
 	private JTextField txtFExperience, txtFLevel, txtFName, txtFGold, txtFArmorParts, txtfKills, txtfDeaths, txtfTimePlayed, txtfGoldEarned, txtfDef, txtfAtk, txtfLife;
 	private PlayerCharacter activeCharacter;
 	private String charName;
-	private int level, experience, goldCount, armorPartsCount, killCount, deathCount, timePlayed, goldEarned;
+	private int level, experience, goldCount, armorPartsCount, killCount, deathCount, timePlayed, goldEarned, hpValue, atkValue, defValue;
 	private ArrayList<ItemModel> inventoryContentList;
 	private EquipmentModel[] equipmentList;
 	private InventoryModel inventory;
 	private StatisticsModel statistics;
-	private Object[] inventoryTableColumnNames = {"Name", "Anzahl", "Level", "Position", "Angriff", "Verteidigung", "Leben", "Goldwert", "Ruestungsteile"}, equipmentTableColumnNames = {"SlotID", "Name", "Level", "Position", "Angriff", "Verteidigung", "Lebel", "Goldwert", "Ruestungsteile"};
+	private Object[] inventoryTableColumnNames = {"Name", "Anzahl", "Level", "Position", "Angriff", "Verteidigung", "Leben", "Goldwert", "Ruestungsteile"}, equipmentTableColumnNames = {"SlotID", "Name", "Level", "Position", "Angriff", "Verteidigung", "Leben", "Goldwert", "Ruestungsteile"};
 	private Object[][] inventoryTableRowData = new Object[10][9], equipmentTableRowData = new Object[5][9];
 	private JTable inventoryTable, equipmentTable;
 	private ButtonGroup inventoryRadioBtnGroup, equipmentRadioBtnGroup;
 	private JComboBox<String> combEquip, combConsumable;	
 	private DefaultListModel<String> globalInventoryListModel;
 	private JList<String> globalInventoryJList;
+	private JSpinner spinGoldValue;
 
 	/**
 	 * creates all window components
@@ -69,14 +70,13 @@ public class ShowcaseView extends JFrame
 	public ShowcaseView(ShowcaseController paramShowcaseController, String paramUsername, PlayerCharacter paramPlayer)
 	{
 		this.activeCharacter = paramPlayer;
-		this.initiateShowcase();
 		
 		getContentPane().setLayout(null);
 
 //----------JButton----------
 
-		JButton btnLogout = new JButton("Abmelden");
-		btnLogout.setBounds(917, 538, 96, 27);
+		JButton btnLogout = new JButton("Logout");
+		btnLogout.setBounds(971, 590, 86, 27);
 		btnLogout.addActionListener(paramShowcaseController);
 		btnLogout.setActionCommand("logout");
 		getContentPane().add(btnLogout);
@@ -166,16 +166,40 @@ public class ShowcaseView extends JFrame
 		getContentPane().add(btnPickupFromGlobal);
 		
 		JButton btnExit = new JButton("Beenden");
-		btnExit.setBounds(917, 580, 96, 27);
+		btnExit.setBounds(971, 621, 86, 27);
 		btnExit.addActionListener(paramShowcaseController);
 		btnExit.setActionCommand("exit");
 		getContentPane().add(btnExit);
 		
 		JButton btnSave = new JButton("Speichern");
-		btnSave.setBounds(917, 500, 96, 27);
+		btnSave.setBounds(870, 621, 96, 27);
 		btnSave.addActionListener(paramShowcaseController);
 		btnSave.setActionCommand("save");
 		getContentPane().add(btnSave);
+		
+		JButton btnIncreaseLevel = new JButton("Level ++");
+		btnIncreaseLevel.setBounds(971, 461, 86, 64);
+		btnIncreaseLevel.addActionListener(paramShowcaseController);
+		btnIncreaseLevel.setActionCommand("increase_level");
+		getContentPane().add(btnIncreaseLevel);
+		
+		JButton btnIncreaseKillCount = new JButton("Kills ++");
+		btnIncreaseKillCount.setBounds(870, 461, 96, 27);
+		btnIncreaseKillCount.addActionListener(paramShowcaseController);
+		btnIncreaseKillCount.setActionCommand("increase_kills");
+		getContentPane().add(btnIncreaseKillCount);
+		
+		JButton btnIncreaseDeathCount = new JButton("Tode ++");
+		btnIncreaseDeathCount.setBounds(870, 498, 96, 27);
+		btnIncreaseDeathCount.addActionListener(paramShowcaseController);
+		btnIncreaseDeathCount.setActionCommand("increase_deaths");
+		getContentPane().add(btnIncreaseDeathCount);
+		
+		JButton btnIncreaseTimePlayed = new JButton("Spielzeit ++");
+		btnIncreaseTimePlayed.setBounds(870, 538, 187, 27);
+		btnIncreaseTimePlayed.addActionListener(paramShowcaseController);
+		btnIncreaseTimePlayed.setActionCommand("increase_time");
+		getContentPane().add(btnIncreaseTimePlayed);
 
 //----------JTextField----------
 		
@@ -183,51 +207,43 @@ public class ShowcaseView extends JFrame
 		txtFExperience.setEditable(false);
 		txtFExperience.setBounds(88, 86, 86, 20);
 		txtFExperience.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		txtFExperience.setText(Integer.toString(this.experience));
 		getContentPane().add(txtFExperience);
 		
 		txtFLevel = new JTextField();
 		txtFLevel.setEditable(false);
 		txtFLevel.setBounds(88, 61, 86, 20);
 		txtFLevel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		txtFLevel.setText(Integer.toString(this.level));
 		getContentPane().add(txtFLevel);
 		
 		txtFName = new JTextField();
 		txtFName.setEditable(false);
 		txtFName.setBounds(88, 36, 86, 20);
 		txtFName.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		txtFName.setText(this.charName);
 		getContentPane().add(txtFName);
 		
 		txtFGold = new JTextField();
 		txtFGold.setEditable(false);
 		txtFGold.setBounds(257, 380, 86, 20);
 		txtFGold.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		txtFGold.setText(Integer.toString(this.goldCount));
 		getContentPane().add(txtFGold);
 		
 		txtFArmorParts = new JTextField();
 		txtFArmorParts.setEditable(false);
 		txtFArmorParts.setBounds(257, 405, 86, 20);
 		txtFArmorParts.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		txtFArmorParts.setText(Integer.toString(this.armorPartsCount));
 		getContentPane().add(txtFArmorParts);
 		
 		txtfKills = new JTextField();
 		txtfKills.setEditable(false);
 		txtfKills.setBounds(448, 36, 86, 20);
-		getContentPane().add(txtfKills);
 		txtfKills.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		txtfKills.setText(Integer.toString(this.killCount));
-		txtfKills.setColumns(10);
+		getContentPane().add(txtfKills);
 		
 		txtfDeaths = new JTextField();
 		txtfDeaths.setEditable(false);
 		txtfDeaths.setColumns(10);
 		txtfDeaths.setBounds(448, 61, 86, 20);
 		txtfDeaths.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		txtfDeaths.setText(Integer.toString(this.deathCount));
 		getContentPane().add(txtfDeaths);
 		
 		txtfTimePlayed = new JTextField();
@@ -235,14 +251,12 @@ public class ShowcaseView extends JFrame
 		txtfTimePlayed.setColumns(10);
 		txtfTimePlayed.setBounds(448, 86, 86, 20);
 		txtfTimePlayed.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		txtfTimePlayed.setText(Integer.toString(this.timePlayed));
 		getContentPane().add(txtfTimePlayed);
 		
 		txtfGoldEarned = new JTextField();
 		txtfGoldEarned.setEditable(false);
 		txtfGoldEarned.setBounds(551, 61, 96, 20);
 		txtfGoldEarned.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		txtfGoldEarned.setText(Integer.toString(this.goldEarned));
 		getContentPane().add(txtfGoldEarned);
 		
 		txtfDef = new JTextField();
@@ -265,6 +279,10 @@ public class ShowcaseView extends JFrame
 		txtfLife.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		txtfLife.setBounds(265, 36, 86, 20);
 		getContentPane().add(txtfLife);
+		
+//----------initiate data pool----------
+		
+		this.initiateDataPool();
 		
 //----------JRadioButton----------
 		
@@ -382,7 +400,7 @@ public class ShowcaseView extends JFrame
 		
 //----------JSpinner----------
 		
-		JSpinner spinGoldValue = new JSpinner();
+		spinGoldValue = new JSpinner();
 		spinGoldValue.setModel(new SpinnerNumberModel(1, 1, 1000, 1));
 		spinGoldValue.setBounds(851, 90, 78, 22);
 		getContentPane().add(spinGoldValue);
@@ -442,6 +460,14 @@ public class ShowcaseView extends JFrame
 		JSeparator separator_9 = new JSeparator();
 		separator_9.setBounds(877, 449, 166, 22);
 		getContentPane().add(separator_9);
+
+		JSeparator separator_8 = new JSeparator();
+		separator_8.setBounds(877, 136, 166, 22);
+		getContentPane().add(separator_8);
+		
+		JSeparator separator_10 = new JSeparator();
+		separator_10.setBounds(877, 578, 166, 22);
+		getContentPane().add(separator_10);
 		
 //----------JLabel----------
 		
@@ -525,10 +551,6 @@ public class ShowcaseView extends JFrame
 		lblGlobalesInventar.setBounds(917, 156, 100, 14);
 		getContentPane().add(lblGlobalesInventar);
 		
-		JSeparator separator_8 = new JSeparator();
-		separator_8.setBounds(877, 136, 166, 22);
-		getContentPane().add(separator_8);
-		
 		JLabel lblAngriff = new JLabel("Angriff:");
 		lblAngriff.setBounds(184, 64, 46, 14);
 		getContentPane().add(lblAngriff);
@@ -551,11 +573,14 @@ public class ShowcaseView extends JFrame
 		this.setVisible(true);
 	}
 	
-	private void initiateShowcase()
+	private void initiateDataPool()
 	{
 		this.charName = this.activeCharacter.getCharacterName();
 		this.level = this.activeCharacter.getLevel();
 		this.experience = this.activeCharacter.getExperiencePoints();
+		this.hpValue = this.activeCharacter.getCurrentLife();
+		this.atkValue = this.activeCharacter.getAttack();
+		this.defValue = this.activeCharacter.getDefense();
 		this.inventory = this.activeCharacter.getInventory();
 		this.statistics = this.activeCharacter.getStatistics();
 		this.goldCount = this.inventory.getGoldCount();
@@ -566,6 +591,19 @@ public class ShowcaseView extends JFrame
 		this.deathCount = this.statistics.getDeathCount();
 		this.timePlayed = this.statistics.getTimePlayed();
 		this.goldEarned = this.statistics.getGoldEarned();
+		
+		this.txtfLife.setText(Integer.toString(this.hpValue));
+		this.txtfAtk.setText(Integer.toString(this.atkValue));
+		this.txtfDef.setText(Integer.toString(this.defValue));
+		this.txtfGoldEarned.setText(Integer.toString(this.goldEarned));
+		this.txtfTimePlayed.setText(Integer.toString(this.timePlayed));
+		this.txtfDeaths.setText(Integer.toString(this.deathCount));
+		this.txtfKills.setText(Integer.toString(this.killCount));
+		this.txtFArmorParts.setText(Integer.toString(this.armorPartsCount));
+		this.txtFGold.setText(Integer.toString(this.goldCount));
+		this.txtFName.setText(this.charName);
+		this.txtFLevel.setText(Integer.toString(this.level));
+		this.txtFExperience.setText(Integer.toString(this.experience));
 		
 		for(int i = 0; i < 10; i++)
 		{
@@ -673,16 +711,8 @@ public class ShowcaseView extends JFrame
 	
 	public void updateShowcaseView()
 	{
-		this.initiateShowcase();
-		
-		txtFArmorParts.setText(Integer.toString(this.armorPartsCount));
-		txtFGold.setText(Integer.toString(this.goldCount));
-		txtFName.setText(this.charName);
-		txtFLevel.setText(Integer.toString(this.level));
-		txtFExperience.setText(Integer.toString(this.experience));
-		
-		this.initiateJTables();
-		
+		this.initiateDataPool();
+		this.initiateJTables();	
 		globalInventoryJList.setSelectedIndex(0);
 	}
 	
@@ -716,6 +746,16 @@ public class ShowcaseView extends JFrame
 	public int getSelectedEquipmentToGenerate()
 	{
 		return this.combEquip.getSelectedIndex();
+	}
+	
+	public int getSelectedConsumableToGenerate()
+	{
+		return this.combConsumable.getSelectedIndex();
+	}
+	
+	public int getSelectedGoldValueToGenerate()
+	{
+		return Integer.parseInt(this.spinGoldValue.getValue().toString());
 	}
 	
 	public void addItemToGlobalInventory(String paramItemName)

@@ -30,7 +30,7 @@ public abstract class ConsumableModel extends ItemModel
 	 * @param paramPlayer PlayerCharakter model of the player consuming the item
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	public abstract boolean consume(PlayerCharacter paramPlayer);
+	public abstract void consume(PlayerCharacter paramPlayer);
 	
 	/**
 	 * increases the stackSize of the current consumable

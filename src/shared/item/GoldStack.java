@@ -15,5 +15,4 @@ public class GoldStack extends ItemModel
 		//TODO set final values
 		super(1234, paramGoldValue, "Gold", "gold.png");
 	}
-
 }

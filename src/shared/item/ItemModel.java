@@ -81,6 +81,8 @@ public abstract class ItemModel
 		
 		if(isRemoved)
 		{
+			if(this instanceof EquipmentModel)
+				((EquipmentModel) this).setItemID(-1);
 			this.setXPos(paramPlayer.getPosX());
 			this.setYPos(paramPlayer.getPosY());
 			paramGlobalInventory.add(this);

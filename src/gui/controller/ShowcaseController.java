@@ -13,8 +13,11 @@ import shared.item.Boots;
 import shared.item.ChestArmor;
 import shared.item.ConsumableModel;
 import shared.item.EquipmentModel;
+import shared.item.GoldStack;
+import shared.item.HealthPotion;
 import shared.item.Helmet;
 import shared.item.ItemModel;
+import shared.item.ManaPotion;
 import shared.item.OneHandedWeapon;
 import shared.item.Shield;
 import shared.item.TwoHandedWeapon;
@@ -56,7 +59,7 @@ public class ShowcaseController implements ActionListener
 		int currentDefValue = 0;
 		int currentHpValue = 0;
 		
-		//calculat values for weapons
+		//calculate values for weapons
 		if(paramSelectionID < 2)
 		{
 			currentAtkValue = (int)(((double)(currentLevelRestriction * 4) / (double)9) + 4 + randomGenerator.nextInt(range));
@@ -87,7 +90,7 @@ public class ShowcaseController implements ActionListener
 		
 		int currentGoldValue = (int)((double)(currentAtkValue + currentDefValue + currentHpValue) * (double)((double)currentLevelRestriction / (double)10) + 1);
 		
-		ItemModel currentItem = null;
+		EquipmentModel currentItem = null;
 		
 		switch(paramSelectionID)
 		{
@@ -113,6 +116,32 @@ public class ShowcaseController implements ActionListener
 		this.globalInventoryList.add(currentItem);
 		this.showcaseView.addItemToGlobalInventory(currentItem.getItemName());
 	}
+	
+	public void generateNewConsumableByID(int paramSelectionID)
+	{
+		Random randomGenerator = new Random();
+		int currentStackSize = randomGenerator.nextInt(3) + 1;
+		ConsumableModel currentItem = null; 
+		
+		switch(paramSelectionID)
+		{
+			case 0:
+				currentItem = new HealthPotion(currentStackSize);
+				break;
+			case 1:
+				currentItem = new ManaPotion(currentStackSize);
+				break;
+		}
+		this.globalInventoryList.add(currentItem);
+		this.showcaseView.addItemToGlobalInventory(currentItem.getItemName());
+	}
+	
+	public void generateNewGoldStack(int paramSelectedValue)
+	{
+		GoldStack currentGoldStack = new GoldStack(paramSelectedValue);
+		this.globalInventoryList.add(currentGoldStack);
+		this.showcaseView.addItemToGlobalInventory(currentGoldStack.getItemName());
+	}
 
 	/**
 	 * processes ActionEvents triggered in this.showcaseView
@@ -134,10 +163,7 @@ public class ShowcaseController implements ActionListener
 						break;
 					case "equipItem":
 						if(currentItem instanceof EquipmentModel)
-						{
-							if(!(((EquipmentModel) currentItem).equip(this.activePlayer)))
-								this.showcaseView.displayErrorMessage(4);
-						}
+							((EquipmentModel) currentItem).equip(this.activePlayer);
 						else
 							this.showcaseView.displayErrorMessage(1);
 						break;
@@ -188,8 +214,10 @@ public class ShowcaseController implements ActionListener
 					this.generateNewEquipmentByID(this.showcaseView.getSelectedEquipmentToGenerate());
 					break;
 				case "consumable":
+					this.generateNewConsumableByID(this.showcaseView.getSelectedConsumableToGenerate());
 					break;
 				case "gold":
+					this.generateNewGoldStack(this.showcaseView.getSelectedGoldValueToGenerate());
 					break;
 			}
 		}

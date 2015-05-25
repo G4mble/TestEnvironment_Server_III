@@ -13,8 +13,8 @@ public abstract class Armament extends EquipmentModel
 	 * stores remaining parameters in global variables
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	public Armament(int paramID, int paramGoldValue, String paramName, String paramImagePath, int paramLvlRestr, int paramAtkValue, int paramDefValue, int paramHpValue, int paramEqSlotID)
+	public Armament(int paramID, int paramGoldValue, String paramName, String paramImagePath, int paramLvlRestr, int paramAtkValue, int paramDefValue, int paramHpValue, int paramEqSlotID, int paramArmorPartsRevenue)
 	{
-		super(paramID, paramGoldValue, paramName, paramImagePath, paramLvlRestr, paramAtkValue, paramDefValue, paramHpValue, paramEqSlotID);
+		super(paramID, paramGoldValue, paramName, paramImagePath, paramLvlRestr, paramAtkValue, paramDefValue, paramHpValue, paramEqSlotID, paramArmorPartsRevenue);
 	}
 }

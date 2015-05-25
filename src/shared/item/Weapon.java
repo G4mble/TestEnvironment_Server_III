@@ -12,8 +12,8 @@ public abstract class Weapon extends EquipmentModel
 	 * stores remaining parameters in global variables
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	public Weapon(int paramID, int paramGoldValue, String paramName, String paramImagePath, int paramLvlRestr, int paramAtkValue, int paramDefValue, int paramHpValue)
+	public Weapon(int paramID, int paramGoldValue, String paramName, String paramImagePath, int paramLvlRestr, int paramAtkValue, int paramDefValue, int paramHpValue, int paramArmorPartsRevenue)
 	{
-		super(paramID, paramGoldValue, paramName, paramImagePath, paramLvlRestr, paramAtkValue, paramDefValue, paramHpValue, 0);
+		super(paramID, paramGoldValue, paramName, paramImagePath, paramLvlRestr, paramAtkValue, paramDefValue, paramHpValue, 0, paramArmorPartsRevenue);
 	}
 }
