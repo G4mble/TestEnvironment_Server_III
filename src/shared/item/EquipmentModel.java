@@ -47,8 +47,7 @@ public abstract class EquipmentModel extends ItemModel
 	 * */
 	private int calculateArmorPartsRevenue()
 	{
-		int calculationResult = this.levelRestriction / 5;
-		return (Math.max(1, calculationResult));
+		return (Math.max(1, (this.levelRestriction / 5)));
 	}
 	
 	/**
@@ -149,5 +148,10 @@ public abstract class EquipmentModel extends ItemModel
 	public void setItemID(int paramID)
 	{
 		super.itemID = paramID;
+	}
+	
+	public void setArmorPartsRevenue(int paramArmorParts)
+	{
+		this.armorPartsRevenue = paramArmorParts;
 	}
 }

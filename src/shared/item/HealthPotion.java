@@ -14,7 +14,7 @@ public class HealthPotion extends ConsumableModel
 	public HealthPotion(int paramStackSize)
 	{
 		//TODO set correct final values
-		super(2, 5, "Heiltrank", "heiltrank.png", 60, paramStackSize);
+		super(2, 5, "Heiltrank", "heiltrank.png", 40, paramStackSize);
 	}
 	
 	
@@ -26,8 +26,8 @@ public class HealthPotion extends ConsumableModel
 	@Override
 	public void consume(PlayerCharacter paramPlayer)
 	{
-		if(paramPlayer.setCurrentLife((int)((double)(paramPlayer.getCurrentLife()) * (1 + (double)((double)super.valueModificator / (double)100)))))
-			if((--super.stackSize) == 0)
+		if(paramPlayer.setCurrentLife((paramPlayer.getCurrentLife() + (int)((double)(paramPlayer.getMaximumLife()) * ((double)((double)super.valueModificator / (double)100))))))
+			if((super.modifyStackSize(-1)) == 0)
 				paramPlayer.getInventory().removeItemFromInventory(this);
 	}
 }

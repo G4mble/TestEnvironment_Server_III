@@ -39,8 +39,16 @@ public class Mage extends PlayerCharacter
 		this.getInventory().setEquipmentList(defaultEquip);
 	}
 
-	public boolean setMana(int paramMana)
+	public boolean setCurrentMana(int paramMana)
 	{
+		if(paramMana < this.currentMana)
+		{
+			if(paramMana < 0)
+				this.currentMana = 0;
+			else
+				this.currentMana = paramMana;
+			return true;
+		}
 		if(this.currentMana < this.maximumMana)
 		{
 			if(paramMana <= this.maximumMana)
@@ -56,8 +64,13 @@ public class Mage extends PlayerCharacter
 		}
 	}
 	
-	public int getMana()
+	public int getCurrentMana()
 	{
 		return this.currentMana;
+	}
+	
+	public int getMaximumMana()
+	{
+		return this.maximumMana;
 	}
 }

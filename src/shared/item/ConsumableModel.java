@@ -17,7 +17,7 @@ public abstract class ConsumableModel extends ItemModel
 	 * */
 	public ConsumableModel(int paramID, int paramGoldValue, String paramName, String paramImagePath, int paramValueMod, int paramStackSize)
 	{
-		super(paramID, paramGoldValue, paramName, paramImagePath);
+		super(paramID, (paramGoldValue * paramStackSize), paramName, paramImagePath);
 		
 		this.valueModificator = paramValueMod;
 		this.stackSize = paramStackSize;
@@ -33,13 +33,16 @@ public abstract class ConsumableModel extends ItemModel
 	public abstract void consume(PlayerCharacter paramPlayer);
 	
 	/**
-	 * increases the stackSize of the current consumable
-	 * @param paramModificator amount by which the stackSize is to be increased
+	 * increases the stackSize of the current consumable</br>recalculates the itemGoldValue depending on the new stackSize
+	 * @param paramModificator amount by which the stackSize is to be modified (+ / -)
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	public void increaseStackSize(int paramModificator)
+	public int modifyStackSize(int paramModificator)
 	{
+		int itemGoldValuePerUnit = (super.itemGoldValue / this.stackSize);
 		this.stackSize += paramModificator;
+		super.itemGoldValue = (itemGoldValuePerUnit * this.stackSize);
+		return this.stackSize;
 	}
 	
 	/**

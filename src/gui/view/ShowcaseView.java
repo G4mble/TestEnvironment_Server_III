@@ -38,6 +38,7 @@ import javax.swing.JComboBox;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.JList;
+import javax.swing.JToggleButton;
 
 /**
  * displays the showcase view
@@ -62,6 +63,8 @@ public class ShowcaseView extends JFrame
 	private DefaultListModel<String> globalInventoryListModel;
 	private JList<String> globalInventoryJList;
 	private JSpinner spinGoldValue;
+	private JToggleButton tglBtnCrafting;
+	private JButton btnGenerateEquip, btnGenerateConsumable, btnGenerateGold;
 
 	/**
 	 * creates all window components
@@ -135,19 +138,19 @@ public class ShowcaseView extends JFrame
 		btnZerlegen.addActionListener(paramShowcaseController);
 		getContentPane().add(btnZerlegen);
 		
-		JButton btnGenerateEquip = new JButton("Erzeugen");
+		btnGenerateEquip = new JButton("Erzeugen");
 		btnGenerateEquip.setBounds(949, 36, 108, 22);
 		btnGenerateEquip.addActionListener(paramShowcaseController);
 		btnGenerateEquip.setActionCommand("generate_equip");
 		getContentPane().add(btnGenerateEquip);
 
-		JButton btnGenerateConsumable = new JButton("Erzeugen");
+		btnGenerateConsumable = new JButton("Erzeugen");
 		btnGenerateConsumable.setBounds(949, 63, 108, 22);
 		btnGenerateConsumable.addActionListener(paramShowcaseController);
 		btnGenerateConsumable.setActionCommand("generate_consumable");
 		getContentPane().add(btnGenerateConsumable);
 
-		JButton btnGenerateGold = new JButton("Erzeugen");
+		btnGenerateGold = new JButton("Erzeugen");
 		btnGenerateGold.setBounds(949, 90, 108, 22);
 		btnGenerateGold.addActionListener(paramShowcaseController);
 		btnGenerateGold.setActionCommand("generate_gold");
@@ -178,28 +181,40 @@ public class ShowcaseView extends JFrame
 		getContentPane().add(btnSave);
 		
 		JButton btnIncreaseLevel = new JButton("Level ++");
-		btnIncreaseLevel.setBounds(971, 461, 86, 64);
+		btnIncreaseLevel.setBounds(971, 461, 86, 27);
 		btnIncreaseLevel.addActionListener(paramShowcaseController);
-		btnIncreaseLevel.setActionCommand("increase_level");
+		btnIncreaseLevel.setActionCommand("modify_level");
 		getContentPane().add(btnIncreaseLevel);
 		
 		JButton btnIncreaseKillCount = new JButton("Kills ++");
 		btnIncreaseKillCount.setBounds(870, 461, 96, 27);
 		btnIncreaseKillCount.addActionListener(paramShowcaseController);
-		btnIncreaseKillCount.setActionCommand("increase_kills");
+		btnIncreaseKillCount.setActionCommand("modify_kills");
 		getContentPane().add(btnIncreaseKillCount);
 		
 		JButton btnIncreaseDeathCount = new JButton("Tode ++");
 		btnIncreaseDeathCount.setBounds(870, 498, 96, 27);
 		btnIncreaseDeathCount.addActionListener(paramShowcaseController);
-		btnIncreaseDeathCount.setActionCommand("increase_deaths");
+		btnIncreaseDeathCount.setActionCommand("modify_deaths");
 		getContentPane().add(btnIncreaseDeathCount);
 		
 		JButton btnIncreaseTimePlayed = new JButton("Spielzeit ++");
 		btnIncreaseTimePlayed.setBounds(870, 538, 187, 27);
 		btnIncreaseTimePlayed.addActionListener(paramShowcaseController);
-		btnIncreaseTimePlayed.setActionCommand("increase_time");
+		btnIncreaseTimePlayed.setActionCommand("modify_time");
 		getContentPane().add(btnIncreaseTimePlayed);
+		
+		JButton btnDecreaseLife = new JButton("Leben --");
+		btnDecreaseLife.addActionListener(paramShowcaseController);
+		btnDecreaseLife.setActionCommand("modify_life");
+		btnDecreaseLife.setBounds(971, 499, 86, 27);
+		getContentPane().add(btnDecreaseLife);
+		
+		tglBtnCrafting = new JToggleButton("Toggle Crafting");
+		tglBtnCrafting.setBounds(937, 9, 120, 22);
+		tglBtnCrafting.addActionListener(paramShowcaseController);
+		tglBtnCrafting.setActionCommand("tgl_crafting");
+		getContentPane().add(tglBtnCrafting);
 
 //----------JTextField----------
 		
@@ -713,7 +728,30 @@ public class ShowcaseView extends JFrame
 	{
 		this.initiateDataPool();
 		this.initiateJTables();	
-		globalInventoryJList.setSelectedIndex(0);
+		this.globalInventoryJList.setSelectedIndex(0);
+	}
+	
+	public void switchCraftingMode(boolean paramToActivate)
+	{
+		if(paramToActivate)
+		{
+			this.btnGenerateConsumable.setEnabled(false);
+			this.btnGenerateGold.setEnabled(false);
+			this.combConsumable.setEnabled(false);
+			this.spinGoldValue.setEnabled(false);
+			this.btnGenerateEquip.setActionCommand("craft_equip");
+			this.btnGenerateEquip.setText("Herstellen");
+			
+		}
+		else
+		{
+			this.btnGenerateConsumable.setEnabled(true);
+			this.btnGenerateGold.setEnabled(true);
+			this.combConsumable.setEnabled(true);
+			this.spinGoldValue.setEnabled(true);
+			this.btnGenerateEquip.setActionCommand("generate_equip");
+			this.btnGenerateEquip.setText("Erzeugen");
+		}
 	}
 	
 	public ItemModel getSelectedItemFromInventory()
@@ -773,6 +811,11 @@ public class ShowcaseView extends JFrame
 		return this.globalInventoryJList.getSelectedIndex();
 	}
 	
+	public boolean isCraftingModeActive()
+	{
+		return this.tglBtnCrafting.isSelected();
+	}
+	
 	public void displayErrorMessage(int paramErrorID)
 	{
 		String errorMessage = "";
@@ -790,6 +833,11 @@ public class ShowcaseView extends JFrame
 				break;
 			case 4:
 				errorMessage = "Ihr Inventar ist voll!";
+				break;
+			case 5:
+				int armorPartsCosts = ((Math.max(1, (this.activeCharacter.getLevel() / 5))) * 12);
+				int goldCosts = (Math.max(1, ((this.activeCharacter.getLevel() / 5) * 1145)));
+				errorMessage = "Sie haben nicht genuegend Ressourcen um dieses Item herzustellen!\nSie benoetigen mindestens " + armorPartsCosts + " Ruestungsteile und " + goldCosts + " Gold um ein Item dieser Stufe herstellen zu koennen!";
 				break;
 		}
 		JOptionPane.showMessageDialog(null, errorMessage, "Achtung!", JOptionPane.WARNING_MESSAGE);

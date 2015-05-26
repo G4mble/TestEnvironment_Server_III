@@ -7,7 +7,7 @@ import javax.swing.JOptionPane;
  * @author Heusser, Caspar
  */
 public abstract class CombatantModel extends Character {
-	private int currentLife;
+	private int currentMana;
 	private int maximumLife;
 	private int attack;
 	private int defense;
@@ -28,7 +28,7 @@ public abstract class CombatantModel extends Character {
 	 */
 	public CombatantModel(int maximumLife, int attack, int defense, int movementSpeed,int characterId, String characterName, int posX, int posY, boolean attackable, String imagePath){
 		super(characterId, characterName, posX, posY, attackable, imagePath);
-		this.currentLife = maximumLife;
+		this.currentMana = maximumLife;
 		this.maximumLife = maximumLife;
 		this.attack = attack;
 		this.defense=defense;
@@ -40,7 +40,7 @@ public abstract class CombatantModel extends Character {
 	 * @return the life
 	 */
 	public int getCurrentLife() {
-		return this.currentLife;
+		return this.currentMana;
 	}
 	/**
 	 * @author Heusser, Caspar
@@ -48,12 +48,20 @@ public abstract class CombatantModel extends Character {
 	 */
 	public boolean setCurrentLife(int life) 
 	{
-		if(this.currentLife < this.maximumLife)
+		if(life < this.currentMana)
+		{
+			if(life < 0)
+				this.currentMana = 0;
+			else
+				this.currentMana = life;
+			return true;
+		}
+		else if(this.currentMana < this.maximumLife)
 		{
 			if(life <= this.maximumLife)
-				this.currentLife = life;
+				this.currentMana = life;
 			else
-				this.resetCurrentLife();
+				this.currentMana = this.maximumLife;
 			return true;
 		}
 		else
@@ -61,11 +69,6 @@ public abstract class CombatantModel extends Character {
 			JOptionPane.showMessageDialog(null, "Sie haben bereits volle Lebenspunkte!", "Achtung!", JOptionPane.WARNING_MESSAGE);
 			return false;
 		}
-	}
-	
-	public void resetCurrentLife()
-	{
-		this.currentLife = this.maximumLife;
 	}
 	
 	public void setMaximumLife(int maxLife)

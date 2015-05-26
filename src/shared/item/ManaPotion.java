@@ -10,7 +10,7 @@ public class ManaPotion extends ConsumableModel
 
 	public ManaPotion(int paramStackSize)
 	{
-		super(3, 5, "Manatrank", "manaTrank.png", 30, paramStackSize);
+		super(3, 5, "Manatrank", "manaTrank.png", 40, paramStackSize);
 	}
 
 	@Override
@@ -19,7 +19,7 @@ public class ManaPotion extends ConsumableModel
 		if(paramPlayer instanceof Mage)
 		{
 			Mage currentPlayer = (Mage) paramPlayer;
-			if(currentPlayer.setMana((int)((double)(currentPlayer.getMana()) * (double)((double)super.valueModificator / (double)100))))
+			if(currentPlayer.setCurrentMana((currentPlayer.getCurrentMana() + (int)((double)(currentPlayer.getMaximumMana()) * (double)((double)super.valueModificator / (double)100)))))
 				if((--super.stackSize) == 0)
 					currentPlayer.getInventory().removeItemFromInventory(this);
 		}

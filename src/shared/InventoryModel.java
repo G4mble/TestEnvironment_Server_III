@@ -72,7 +72,7 @@ public class InventoryModel
 		this.owningCharacter.setDefense(currentDef);
 		
 		if(this.owningCharacter.getCurrentLife() > currentMaxLife)
-			this.owningCharacter.resetCurrentLife();
+			this.owningCharacter.setCurrentLife(this.owningCharacter.getMaximumLife());
 	}
 	
 	/**
@@ -91,7 +91,7 @@ public class InventoryModel
 				ItemModel currentItem = this.inventoryContentList.get(i);
 				if(currentItem.getItemID() == paramItem.getItemID())
 				{
-					((ConsumableModel)currentItem).increaseStackSize(((ConsumableModel) paramItem).getStackSize());
+					((ConsumableModel)currentItem).modifyStackSize(((ConsumableModel) paramItem).getStackSize());
 					isExisting = true;
 					break;
 				}
@@ -100,7 +100,10 @@ public class InventoryModel
 				this.inventoryContentList.add(paramItem);
 		}
 		else if(paramItem instanceof GoldStack)
+		{
 			this.modifyGoldCount(paramItem.getItemGoldValue());
+			this.owningCharacter.getStatistics().updateGoldEarned(paramItem.getItemGoldValue());
+		}
 		else if(this.inventoryContentList.size() < INVENTORY_SIZE)
 			this.inventoryContentList.add(paramItem);
 		else
@@ -193,10 +196,7 @@ public class InventoryModel
 	public void salvageEquipment(EquipmentModel paramItem)
 	{
 		if(!(this.removeItemFromInventory(paramItem)))
-		{
 			this.removeItemFromEquip(paramItem, false);
-			this.modifyPlayerAttributes(paramItem, false);
-		}
 		this.modifyArmorPartsCount(paramItem.getArmorPartsRevenue());
 	}
 	
@@ -208,11 +208,9 @@ public class InventoryModel
 	public void sellItem(ItemModel paramItem)
 	{
 		if(!(this.removeItemFromInventory(paramItem)))
-		{
 			this.removeItemFromEquip((EquipmentModel)paramItem, false);
-			this.modifyPlayerAttributes((EquipmentModel)paramItem, false);
-		}
 		this.modifyGoldCount(paramItem.getItemGoldValue());
+		this.owningCharacter.getStatistics().updateGoldEarned(paramItem.getItemGoldValue());
 	}
 	
 	/**
@@ -246,7 +244,7 @@ public class InventoryModel
 	
 	/**
 	 * @return current armorPartsCount
-	 * @authro Staufenberg, Thomas, 5820359
+	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	public int getArmorPartsCount()
 	{
