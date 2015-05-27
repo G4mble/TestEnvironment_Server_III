@@ -19,11 +19,14 @@ public class ProgramController
 {
 	private UserInputController userInputController;
 	private DataBaseController dbController;
+	private HighscoreController highscoreController;
 	private ArrayList<Message> incomingMessageList;
 	private boolean messageIsProcessing = false;
 	private String activeUsername;
 	private int activeCharID;
+	private Object[][] highscoreData = null;
 	private PlayerCharacter activeCharacter;
+	private boolean isHighscoreUpdateRunning = false;
 	
 	/**
 	 * initializes global variables, creates a menu for the first time
@@ -33,6 +36,8 @@ public class ProgramController
 	{
 		this.incomingMessageList = new ArrayList<>();
 		this.dbController = DataBaseController.getInstance(this);
+		this.userInputController = null;
+		this.highscoreController = null;
 		new MenuController(this);
 	}
 	
@@ -81,7 +86,7 @@ public class ProgramController
 	 * creates a new character depending on the users selection</br>invokes link operation of user and character
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	public void createNewCharacter()
+	private void createNewCharacter()
 	{
 		if(this.activeCharID == 1)
 			this.activeCharacter = new Warrior(1);				//set default clientID = 1
@@ -124,7 +129,35 @@ public class ProgramController
 	public void returnToMenu()
 	{
 		this.userInputController = null;
+		this.closeHighscore();
 		new MenuController(this);
+	}
+	
+	public void initiateHighscore()
+	{
+		if(this.highscoreController == null)
+		{
+			this.sendMessage(new LoadHighscoreMessage("username"));
+			if(this.highscoreData != null)
+				this.highscoreController = new HighscoreController(this.highscoreData, this);
+			else
+				JOptionPane.showMessageDialog(null, "Highscore konnte nicht geladen werden!", "Fehler!", JOptionPane.ERROR_MESSAGE);
+		}
+		else
+			this.highscoreController.getHighscoreView().requestFocus();
+	}
+	
+	public void updateHighscore(String paramFilterAttribute)
+	{
+		this.isHighscoreUpdateRunning = true;
+		this.sendMessage(new LoadHighscoreMessage(paramFilterAttribute));
+	}
+	
+	public void closeHighscore()
+	{
+		if(this.highscoreController != null)
+			this.highscoreController.getHighscoreView().dispose();
+		this.highscoreController = null;
 	}
 	
 	/**
@@ -172,6 +205,15 @@ public class ProgramController
 				this.createNewCharacter();
 			else if(currentMessage instanceof SavePlayerDataMessage)
 				this.sendMessage(currentMessage);
+			else if(currentMessage instanceof HighscoreDataMessage)
+			{
+				this.highscoreData = ((HighscoreDataMessage) currentMessage).getHighscoreData();
+				if(this.isHighscoreUpdateRunning)
+				{
+					this.isHighscoreUpdateRunning = false;
+					this.highscoreController.updateHighscore(this.highscoreData);
+				}
+			}
 		}
 		this.messageIsProcessing = false;
 	}

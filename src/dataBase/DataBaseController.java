@@ -202,6 +202,8 @@ public class DataBaseController
 					this.sendMessage(new OperationRejectedMessage("Fehler beim Erstellen des Charakters!"));
 			else if(currentMessage instanceof SavePlayerDataMessage)
 				this.savePlayerData(((SavePlayerDataMessage) currentMessage).getUsername(), ((SavePlayerDataMessage) currentMessage).getPlayerCharacter());
+			else if(currentMessage instanceof LoadHighscoreMessage)
+				this.sendMessage(new HighscoreDataMessage((this.loadHighscore(((LoadHighscoreMessage) currentMessage).getFilterAttribute()))));
 		}
 		this.messageIsProcessing = false;
 	}
@@ -214,6 +216,42 @@ public class DataBaseController
 	private void sendMessage(Message paramMessage)
 	{
 		this.programController.receiveMessage(paramMessage);
+	}
+	
+	private Object[][] loadHighscore(String paramFilterAttribute)
+	{
+		this.establishConnection();
+		
+		try(Statement stmt = this.dbConnection.createStatement(); ResultSet highscoreResult = stmt.executeQuery("SELECT alloc.username, monsterKillCount, numberOfDeaths, goldEarned, timePlayed FROM statistics JOIN(SELECT playerAllocation.username, statisticsID FROM registeredUser JOIN playerAllocation ON registeredUser.username = playerAllocation.username) as alloc ON statistics.statisticsID = alloc.statisticsID ORDER BY " + paramFilterAttribute + " DESC"))
+		{
+			int rowCount = 0;
+			Object[][] highscoreData = null;
+			if(highscoreResult.last())
+			{
+				rowCount = highscoreResult.getRow();
+				highscoreData = new Object[rowCount][5];
+				highscoreResult.beforeFirst();
+			}
+			
+			while(highscoreResult.next())
+			{
+				highscoreData[(highscoreResult.getRow() - 1)][0] = highscoreResult.getString(1);
+				for(int i = 1; i < 5; i++)
+					highscoreData[(highscoreResult.getRow() - 1)][i] = highscoreResult.getInt((i + 1));
+			}
+			return highscoreData;
+		}
+		catch(SQLException sqlE)
+		{
+			System.err.println("Fehler beim auslesen von Highscores\nDBController.loadHighscore()");
+			sqlE.printStackTrace();
+			//TODO handle exception
+			return null;
+		}
+		finally
+		{
+			this.closeConnection();
+		}
 	}
 	
 	
@@ -300,7 +338,7 @@ public class DataBaseController
 				Statement inventoryStmt = this.dbConnection.createStatement(); ResultSet inventoryResult = inventoryStmt.executeQuery("SELECT goldCount, armorPartsCount, healthPotionCount, manaPotionCount FROM inventory WHERE inventoryID = " + retrieveIDResult.getInt(2));
 				Statement itemStmt = this.dbConnection.createStatement(); ResultSet itemResult = itemStmt.executeQuery("SELECT alloc.slotID, item.itemID, equipSlot, attackValue, defenseValue, hpValue, levelRestriction, itemPrice, armorPartsRevenue FROM (SELECT slotID, itemID FROM inventoryItemAllocation WHERE inventoryID = " + retrieveIDResult.getInt(2) + ") AS alloc JOIN item ON alloc.itemID = item.itemID ORDER BY alloc.slotID"))
 			{
-				//TODO do something with saveGameData			
+				//TODO do something with saveGameData
 				saveGameResult.next();
 	
 				//create statistics
@@ -399,7 +437,7 @@ public class DataBaseController
 		}
 	}
 	
-	public void deleteItem(ArrayList<Integer> paramToDeleteItemList, ResultSet paramItemResult)
+	private void deleteItem(ArrayList<Integer> paramToDeleteItemList, ResultSet paramItemResult)
 	{
 		try(Statement stmt = this.dbConnection.createStatement())
 		{

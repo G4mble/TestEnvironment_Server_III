@@ -6,7 +6,7 @@ package message;
  * */
 public abstract class Message
 {
-	private int receiverID;				//ProgramController: 100 ; DataBaseController: 200 ; 
+	private int receiverID;				//ProgramController: 100 ; DataBaseController: 200 ;
 
 	/**
 	 * creates new Message and sets the receiverID

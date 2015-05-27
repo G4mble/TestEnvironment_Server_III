@@ -102,7 +102,7 @@ public class ShowcaseController implements ActionListener
 		}
 		
 		//calculate gold value
-		int currentGoldValue = (int)((double)(currentAtkValue + currentDefValue + currentHpValue) * (double)((double)currentLevelRestriction / (double)10) + 1);
+		int currentGoldValue = (int)((double)(currentAtkValue + currentDefValue + currentHpValue) * (double)((double)currentLevelRestriction / (double)5) + 1);
 		
 		//modify item values even more if the item got crafted
 		if(paramIsCrafted)
@@ -130,6 +130,8 @@ public class ShowcaseController implements ActionListener
 				currentDefValue *= ((double)2 - (double)randomGenerator.nextDouble());
 			if(randomGenerator.nextInt(100) >= 97)
 				currentHpValue *= ((double)2 - (double)randomGenerator.nextDouble());
+			
+			currentGoldValue = (int)((double)(currentAtkValue + currentDefValue + currentHpValue) * (double)((double)currentLevelRestriction / (double)2) + 1);
 		}
 		
 		EquipmentModel currentItem = null;
@@ -170,8 +172,8 @@ public class ShowcaseController implements ActionListener
 	
 	private void craftEquipmentByID(int paramSelectionID)
 	{
-		int armorPartsCosts = ((Math.max(1, (this.activePlayer.getLevel() / 5))) * 12);
-		int goldCosts = (Math.max(1, ((this.activePlayer.getLevel() / 5) * 1145)));
+		int armorPartsCosts = ((Math.max(1, (this.activePlayer.getLevel() / 5))) * 11);
+		int goldCosts = (Math.max(1, ((this.activePlayer.getLevel() / 5) * 945)));
 		if((this.activePlayer.getInventory().getArmorPartsCount() >= armorPartsCosts) &&(this.activePlayer.getInventory().getGoldCount() >= goldCosts))
 		{
 			if((this.activePlayer.getInventory().getInventoryContentList().size()) < (this.activePlayer.getInventory().getInventorySize()))
@@ -336,6 +338,8 @@ public class ShowcaseController implements ActionListener
 		}
 		else if(actionCommand.equals("craft_equip"))
 			this.craftEquipmentByID(this.showcaseView.getSelectedEquipmentToGenerate());
+		else if(actionCommand.equals("highscore"))
+			this.programController.initiateHighscore();
 		else if(actionCommand.equals("logout"))
 		{
 			this.sendMessage(new SavePlayerDataMessage(this.activeUsername, this.activePlayer));

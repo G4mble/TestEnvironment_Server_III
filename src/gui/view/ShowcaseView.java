@@ -65,6 +65,7 @@ public class ShowcaseView extends JFrame
 	private JSpinner spinGoldValue;
 	private JToggleButton tglBtnCrafting;
 	private JButton btnGenerateEquip, btnGenerateConsumable, btnGenerateGold;
+	private JScrollPane inventoryScrollPane, equipmentScrollPane;
 
 	/**
 	 * creates all window components
@@ -416,7 +417,7 @@ public class ShowcaseView extends JFrame
 //----------JSpinner----------
 		
 		spinGoldValue = new JSpinner();
-		spinGoldValue.setModel(new SpinnerNumberModel(1, 1, 1000, 1));
+		spinGoldValue.setModel(new SpinnerNumberModel(1, 1, 10000, 1));
 		spinGoldValue.setBounds(851, 90, 78, 22);
 		getContentPane().add(spinGoldValue);
 
@@ -713,21 +714,23 @@ public class ShowcaseView extends JFrame
 		equipmentTCM.getColumn(7).setPreferredWidth(71);
 		equipmentTCM.getColumn(8).setPreferredWidth(110);
 		
-		JScrollPane inventoryScrollPane = new JScrollPane(this.inventoryTable);
+		this.inventoryScrollPane = new JScrollPane(this.inventoryTable);
 		this.inventoryTable.setFillsViewportHeight(true);
-		inventoryScrollPane.setBounds(10, 146, 779, 223);
-		getContentPane().add(inventoryScrollPane);
+		this.inventoryScrollPane.setBounds(10, 146, 779, 223);
+		getContentPane().add(this.inventoryScrollPane);
 		
-		JScrollPane equipmentScrollPane = new JScrollPane(this.equipmentTable);
+		this.equipmentScrollPane = new JScrollPane(this.equipmentTable);
 		this.equipmentTable.setFillsViewportHeight(true);
-		equipmentScrollPane.setBounds(10, 460, 758, 123);
-		getContentPane().add(equipmentScrollPane);
+		this.equipmentScrollPane.setBounds(10, 460, 758, 123);
+		getContentPane().add(this.equipmentScrollPane);
 	}
 	
 	public void updateShowcaseView()
 	{
 		this.initiateDataPool();
-		this.initiateJTables();	
+		this.getContentPane().remove(this.inventoryScrollPane);
+		this.getContentPane().remove(this.equipmentScrollPane);
+		this.initiateJTables();
 		this.globalInventoryJList.setSelectedIndex(0);
 	}
 	
@@ -835,8 +838,8 @@ public class ShowcaseView extends JFrame
 				errorMessage = "Ihr Inventar ist voll!";
 				break;
 			case 5:
-				int armorPartsCosts = ((Math.max(1, (this.activeCharacter.getLevel() / 5))) * 12);
-				int goldCosts = (Math.max(1, ((this.activeCharacter.getLevel() / 5) * 1145)));
+				int armorPartsCosts = ((Math.max(1, (this.activeCharacter.getLevel() / 5))) * 11);
+				int goldCosts = (Math.max(1, ((this.activeCharacter.getLevel() / 5) * 945)));
 				errorMessage = "Sie haben nicht genuegend Ressourcen um dieses Item herzustellen!\nSie benoetigen mindestens " + armorPartsCosts + " Ruestungsteile und " + goldCosts + " Gold um ein Item dieser Stufe herstellen zu koennen!";
 				break;
 		}
