@@ -7,7 +7,7 @@ import javax.swing.JOptionPane;
  * @author Heusser, Caspar
  */
 public abstract class CombatantModel extends Character {
-	private int currentMana;
+	private int currentLife;
 	private int maximumLife;
 	private int attack;
 	private int defense;
@@ -28,7 +28,7 @@ public abstract class CombatantModel extends Character {
 	 */
 	public CombatantModel(int maximumLife, int attack, int defense, int movementSpeed,int characterId, String characterName, int posX, int posY, boolean attackable, String imagePath){
 		super(characterId, characterName, posX, posY, attackable, imagePath);
-		this.currentMana = maximumLife;
+		this.currentLife = maximumLife;
 		this.maximumLife = maximumLife;
 		this.attack = attack;
 		this.defense=defense;
@@ -40,7 +40,7 @@ public abstract class CombatantModel extends Character {
 	 * @return the life
 	 */
 	public int getCurrentLife() {
-		return this.currentMana;
+		return this.currentLife;
 	}
 	/**
 	 * @author Heusser, Caspar
@@ -48,20 +48,20 @@ public abstract class CombatantModel extends Character {
 	 */
 	public boolean setCurrentLife(int life) 
 	{
-		if(life < this.currentMana)
+		if(life < this.currentLife)
 		{
 			if(life < 0)
-				this.currentMana = 0;
+				this.currentLife = 0;
 			else
-				this.currentMana = life;
+				this.currentLife = life;
 			return true;
 		}
-		else if(this.currentMana < this.maximumLife)
+		else if(this.currentLife < this.maximumLife)
 		{
 			if(life <= this.maximumLife)
-				this.currentMana = life;
+				this.currentLife = life;
 			else
-				this.currentMana = this.maximumLife;
+				this.currentLife = this.maximumLife;
 			return true;
 		}
 		else
