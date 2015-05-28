@@ -42,8 +42,8 @@ public class DataBaseController
 	
 	/**
 	 * private constructor to guarantee only one instance of this class at a time</br>
-	 * tries to connect to the DB to see if it is there, switches to noDB mode if an error occurs</br>
-	 * initializes the database if not already done
+	 * tries to connect to the DB to see if it is there; switches to noDB mode if an error occurs</br>
+	 * initializes the database schema if not already done
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	private DataBaseController(ProgramController paramProgramController)
@@ -54,7 +54,7 @@ public class DataBaseController
 		else
 		{
 			System.err.println("Verbindung zur Datenbak fehlgeschlagen!");
-			//TODO switch to no database mode...
+			//TODO switch to no database mode
 		}
 		this.incomingMessageList = new ArrayList<>();
 		this.programController = paramProgramController;
@@ -76,7 +76,7 @@ public class DataBaseController
 	
 	/**
 	 * tries to establish a connection to the database
-	 * @return true: connected</br>false: couldn't connect
+	 * @return true: connected</br>false: could not establish connection
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	private boolean establishConnection()
@@ -90,13 +90,14 @@ public class DataBaseController
 		catch(SQLException sqlE)
 		{
 			System.err.println("Fehler in establishConnection()");
+			//TODO handle exception
 			sqlE.printStackTrace();
 			return false;
 		}
 	}
 	
 	/**
-	 * closes all open connections to the database to ensure data integrity
+	 * closes the open connection to the database to ensure data integrity
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	private void closeConnection()
@@ -113,11 +114,12 @@ public class DataBaseController
 		{
 			System.out.println("fehler in closeConnection()");
 			sqlE.printStackTrace();
+			//TODO handle exception
 		}
 	}
 	
 	/**
-	 * creates all needed tables in the database and inserts required data for the game to work</br>
+	 * creates all required tables in the database and inserts required data for the game to work</br>
 	 * if the database has been initialized before, this method changes nothing
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
@@ -149,10 +151,10 @@ public class DataBaseController
 	}
 	
 	/**
-	 * called by ServerEngine_I for communcation purpose</br>
-	 * adds the given Message to a list and starts the handle process if not already running
-	 * @author Staufenberg, Thomas, 5820359
+	 * called by ServerEngine_I for communication purpose</br>
+	 * adds the given Message to a list and starts the handling process if it is not already running
 	 * @param paramMessage the Message to receive
+	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	public void receiveMessage(Message paramMessage)
 	{
@@ -162,7 +164,8 @@ public class DataBaseController
 	}
 	
 	/**
-	 * called by this.receiveMessage, iterates over incomingMessageList while not empty
+	 * called by this.receiveMessage(), iterates over incomingMessageList while not empty</br>
+	 * handles all incoming Messages
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	private void handleMessage()
@@ -178,6 +181,7 @@ public class DataBaseController
 			}
 			catch(IndexOutOfBoundsException indexExc)
 			{
+				//stop message handling if there is no message left
 				break;
 			}
 			
@@ -209,7 +213,7 @@ public class DataBaseController
 	}
 	
 	/**
-	 * processes outgoing Messages and calls the receiveMessage method of the respective target adress
+	 * processes outgoing Messages and calls the receiveMessage method of the respective target address
 	 * @param paramMessage the Message to be send
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
@@ -218,6 +222,12 @@ public class DataBaseController
 		this.programController.receiveMessage(paramMessage);
 	}
 	
+	/**
+	 * reads the highscore data from the database and sorts it DESC by paramFilterAttribute
+	 * @param paramFilterAttribute the String attribute by which the retrieved data is sorted
+	 * @return highscore data stored in a Object[][]
+	 * @author Staufenberg, Thomas, 5820359 
+	 * */
 	private Object[][] loadHighscore(String paramFilterAttribute)
 	{
 		this.establishConnection();
@@ -260,7 +270,8 @@ public class DataBaseController
 	 * @author Staufenberg, Thomas, 5820359
 	 * @param paramUsername username entered in the login panel
 	 * @param paramPassword password entered in the login panel
-	 * @return true: login successfull</br>false: error on username or password
+	 * @return true: login successful</br>false: error on username or password
+	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	private boolean verifyLogin(String paramUsername, String paramPassword)
 	{
@@ -306,7 +317,7 @@ public class DataBaseController
 				return new ChestArmor(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6), paramItemResult.getInt(9));
 			case 4:
 				return new Boots(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6), paramItemResult.getInt(9));
-			case 5:				//two handed weapons are indentified in the database by ID 5 but in the code via boolean isTwoHand = true AND slotID = 0
+			case 5:				//two handed weapons are identified in the database by ID 5 but in the code via boolean isTwoHand = true AND slotID = 0
 				return new TwoHandedWeapon(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6), paramItemResult.getInt(9));
 			case 6:				//HealthPotion is indicated by equipSlot = 6
 				return new HealthPotion(paramInventoryResult.getInt(3));
@@ -319,10 +330,10 @@ public class DataBaseController
 	
 	/**
 	 * reads all user related data from the database, creates corresponding data model objects</br>
-	 * @author Staufenberg, Thomas, 5820359
 	 * @param paramUsername name of the user requesting the playerData
 	 * @param paramClientID clientID to assign PlayerCharacter to specific client
-	 * @return the PlayerCharacter created from the data read from the database 
+	 * @return the PlayerCharacter created from the data read from the database
+	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	private PlayerCharacter loadPlayerData(String paramUsername, int paramClientID)
 	{		
