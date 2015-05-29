@@ -13,12 +13,11 @@ public abstract class PlayerDataMessage extends Message
 	private PlayerCharacter playerCharacter;
 	
 	/**
-	 * stores username and PlayerCharacter in global variables, forwards receiverID to superclass
+	 * creates a new Message and stores username and PlayerCharacter in global variables
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	public PlayerDataMessage(int paramReceiverID, String paramUsername, PlayerCharacter paramPlayer)
+	public PlayerDataMessage(String paramUsername, PlayerCharacter paramPlayer)
 	{
-		super(paramReceiverID);
 		this.username = paramUsername;
 		this.playerCharacter = paramPlayer;
 	}

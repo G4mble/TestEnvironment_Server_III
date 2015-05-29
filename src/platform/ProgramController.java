@@ -21,12 +21,12 @@ public class ProgramController
 	private DataBaseController dbController;
 	private HighscoreController highscoreController;
 	private ArrayList<Message> incomingMessageList;
-	private boolean messageIsProcessing = false;
+	private boolean messageIsProcessing;
 	private String activeUsername;
 	private int activeCharID;
-	private Object[][] highscoreData = null;
+	private Object[][] highscoreData;
 	private PlayerCharacter activeCharacter;
-	private boolean isHighscoreUpdateRunning = false;
+	private boolean isHighscoreUpdateRunning;
 	
 	/**
 	 * initializes global variables, creates a menu for the first time
@@ -34,6 +34,9 @@ public class ProgramController
 	 * */
 	public ProgramController()
 	{
+		this.messageIsProcessing = false;
+		this.highscoreData = null;
+		this.isHighscoreUpdateRunning = false;
 		this.incomingMessageList = new ArrayList<>();
 		this.dbController = DataBaseController.getInstance(this);
 		this.userInputController = null;
@@ -42,7 +45,28 @@ public class ProgramController
 	}
 	
 	/**
-	 * releases unused menuController</br>
+	 * processes outgoing Messages and calls the receiveMessage method of the respective target adress
+	 * @param paramMessage the Message to be send
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	private void sendMessage(Message paramMessage)
+	{
+		this.dbController.receiveMessage(paramMessage);
+	}
+	
+	/**
+	 * is called after RejectOperationMessage has been received</br>
+	 * notifies the user that some operation requested by him was rejected, displays corresponding message
+	 * @param paramMessage text to be displayed in error message
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	private void rejectOperation(String paramMessage)
+	{
+		this.activeUsername = "";
+		JOptionPane.showMessageDialog(null, paramMessage, "Achtung!", JOptionPane.WARNING_MESSAGE);
+	}
+	
+	/**
 	 * creates new UserInputController as login- or register view, depending on the action specified
 	 * @param paramAction {"Einloggen", "Registrieren"} action requested by user via menu
 	 * @author Staufenberg, Thomas, 5820359
@@ -55,6 +79,8 @@ public class ProgramController
 	/**
 	 * is called after user entered a set of username/password for login purpose</br>
 	 * forwards given data to dataBase for verification via Message
+	 * @param paramUsername username entered in the login panel
+	 * @param paramPassword password entered in the login panel
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	public void initiateLoginProcess(String paramUsername, String paramPassword)
@@ -67,6 +93,8 @@ public class ProgramController
 	 * is called after user entered a set of username/password for registration purpose</br>
 	 * forwards given data to dataBase for verification via Message
 	 * @param paramCharID ID of the selected character
+	 * @param paramUsername username entered in the register panel
+	 * @param paramPassword password entered in the register panel
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	public void initiateRegistrationProcess(String paramUsername, String paramPassword, int paramCharID)
@@ -97,9 +125,7 @@ public class ProgramController
 	
 	/**
 	 * is called after login has been verified or user has been successfully created</br>
-	 * invokes save operation for userdata if specified</br>
 	 * releases unused views and controller, creates new ShowcaseController
-	 * @param paramSavePlayerData true: invokes save operation for userData; false: additional save operation will not be executed
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	private void finalizeAuthenticationProcess()
@@ -111,15 +137,14 @@ public class ProgramController
 	}
 	
 	/**
-	 * is called after RejectOperationMessage has been received</br>
-	 * notifies the user that some operation requested by him was rejected, displays corresponding message
-	 * @param paramMessage text to be displayed in error message
+	 * disposes the highscore view and releases the current highscoreController
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	private void rejectOperation(String paramMessage)
+	public void closeHighscore()
 	{
-		this.activeUsername = "";
-		JOptionPane.showMessageDialog(null, paramMessage, "Achtung!", JOptionPane.WARNING_MESSAGE);
+		if(this.highscoreController != null)
+			this.highscoreController.getHighscoreView().dispose();
+		this.highscoreController = null;
 	}
 	
 	/**
@@ -133,6 +158,10 @@ public class ProgramController
 		new MenuController(this);
 	}
 	
+	/**
+	 * retrieves highscore data from the database via Message</br>creates new HighscoreController
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public void initiateHighscore()
 	{
 		if(this.highscoreController == null)
@@ -147,23 +176,21 @@ public class ProgramController
 			this.highscoreController.getHighscoreView().requestFocus();
 	}
 	
+	/**
+	 * invokes highscore data update</br>notifies database to read highscore data
+	 * @param paramFilterAttribute the attribute by which the highscore data is to be sorted
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public void updateHighscore(String paramFilterAttribute)
 	{
 		this.isHighscoreUpdateRunning = true;
 		this.sendMessage(new LoadHighscoreMessage(paramFilterAttribute));
 	}
 	
-	public void closeHighscore()
-	{
-		if(this.highscoreController != null)
-			this.highscoreController.getHighscoreView().dispose();
-		this.highscoreController = null;
-	}
-	
 	/**
 	 * adds the given Message to a list and starts the handle process if not already running
-	 * @author Staufenberg, Thomas, 5820359
 	 * @param paramMessage the Message to receive
+	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	public void receiveMessage(Message paramMessage)
 	{
@@ -216,15 +243,5 @@ public class ProgramController
 			}
 		}
 		this.messageIsProcessing = false;
-	}
-	
-	/**
-	 * processes outgoing Messages and calls the receiveMessage method of the respective target adress
-	 * @param paramMessage the Message to be send
-	 * @author Staufenberg, Thomas, 5820359
-	 * */
-	private void sendMessage(Message paramMessage)
-	{
-		this.dbController.receiveMessage(paramMessage);
 	}
 }

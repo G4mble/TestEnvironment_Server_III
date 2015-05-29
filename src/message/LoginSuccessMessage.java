@@ -12,12 +12,11 @@ public class LoginSuccessMessage extends Message
 	private PlayerCharacter playerCharacter;
 	
 	/**
-	 * creates a new Message, sets the receiverID and stores the currentPlayer in a global variable
+	 * creates a new Message and stores the currentPlayer in a global variable
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	public LoginSuccessMessage(PlayerCharacter paramPlayer)
 	{
-		super(100);
 		this.playerCharacter = paramPlayer;
 	}
 	

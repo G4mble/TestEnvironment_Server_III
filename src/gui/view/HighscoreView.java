@@ -12,6 +12,10 @@ import java.awt.Dimension;
 import javax.swing.JLabel;
 import javax.swing.JSeparator;
 
+/**
+ * displays the highscoreView
+ * @author Staufenberg, Thomas, 5820359
+ * */
 public class HighscoreView extends JFrame
 {
 	private static final long serialVersionUID = 1L;
@@ -19,6 +23,10 @@ public class HighscoreView extends JFrame
 	private JTable highscoreTable;
 	private JScrollPane highscoreScrollPane;
 	
+	/**
+	 * creates all window components
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public HighscoreView(HighscoreController paramHighscoreController, Object[][] paramHighscoreData) 
 	{
 		setSize(new Dimension(400, 280));
@@ -77,6 +85,12 @@ public class HighscoreView extends JFrame
 		this.setVisible(true);
 	}
 	
+	/**
+	 * creates all required JTables with their corresponding data model</br>
+	 * embeds the table into a JScrollPane to allow scrollable tables
+	 * @param paramHighscoreData data to be displayed in the JTable
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	private void initiateJTables(Object[][] paramHighscoreData)
 	{
 		this.highscoreTable = new JTable(paramHighscoreData, this.highscoreTableColumnNames);
@@ -97,6 +111,11 @@ public class HighscoreView extends JFrame
 		getContentPane().add(this.highscoreScrollPane);
 	}
 	
+	/**
+	 * invokes new initiation of the JTables when the data model has changed
+	 * @param paramHighscoreData changed data
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public void updateJTables(Object[][] paramHighscoreData)
 	{
 		this.getContentPane().remove(this.highscoreScrollPane);

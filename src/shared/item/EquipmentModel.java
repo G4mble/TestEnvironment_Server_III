@@ -66,8 +66,8 @@ public abstract class EquipmentModel extends ItemModel
 	 * if paramAddToInventory == true: adds the item to the players inventory
 	 * @param paramPlayer PlayerCharacter model of the player the item belongs to
 	 * @param paramAddToInventory wheter the item should be added to the inventory (true) or not (false)
-	 * @author Staufenberg, Thomas, 5820359
 	 * @return true: item successfully removed from the equipment and added to the inventory</br>false: inventory full
+	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	protected boolean removeFromEquip(PlayerCharacter paramPlayer, boolean paramAddToInventory)
 	{
@@ -150,6 +150,11 @@ public abstract class EquipmentModel extends ItemModel
 		super.itemID = paramID;
 	}
 	
+	/**
+	 * overwrites the current armorPartsRevenue with the given one
+	 * @param paramArmorParts the amount of armorParts to be set
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public void setArmorPartsRevenue(int paramArmorParts)
 	{
 		this.armorPartsRevenue = paramArmorParts;

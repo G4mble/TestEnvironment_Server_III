@@ -9,11 +9,11 @@ import shared.character.PlayerCharacter;
 public class LinkCharacterToUserMessage extends PlayerDataMessage
 {
 	/**
-	 * forwards username, paramPlayer and receiverID to superclass
+	 * forwards username, paramPlayer and to superclass
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	public LinkCharacterToUserMessage(String paramUsername, PlayerCharacter paramPlayer)
 	{
-		super(200, paramUsername, paramPlayer);
+		super(paramUsername, paramPlayer);
 	}
 }

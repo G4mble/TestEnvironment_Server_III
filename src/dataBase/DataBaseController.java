@@ -148,68 +148,10 @@ public class DataBaseController
 			sqlE.printStackTrace();
 			//TODO handle exception
 		}
-	}
-	
-	/**
-	 * called by ServerEngine_I for communication purpose</br>
-	 * adds the given Message to a list and starts the handling process if it is not already running
-	 * @param paramMessage the Message to receive
-	 * @author Staufenberg, Thomas, 5820359
-	 * */
-	public void receiveMessage(Message paramMessage)
-	{
-		this.incomingMessageList.add(paramMessage);
-		if(!this.messageIsProcessing)
-			this.handleMessage();
-	}
-	
-	/**
-	 * called by this.receiveMessage(), iterates over incomingMessageList while not empty</br>
-	 * handles all incoming Messages
-	 * @author Staufenberg, Thomas, 5820359
-	 * */
-	private void handleMessage()
-	{
-		if(!this.messageIsProcessing)
-			this.messageIsProcessing = true;
-		while(true)
+		finally
 		{
-			Message currentMessage;
-			try
-			{
-				currentMessage = this.incomingMessageList.remove(0);
-			}
-			catch(IndexOutOfBoundsException indexExc)
-			{
-				//stop message handling if there is no message left
-				break;
-			}
-			
-			if(currentMessage instanceof VerifyLoginMessage)
-			{
-				String currentUsername = ((VerifyLoginMessage) currentMessage).getUsername(); 
-				String currentPassword = ((VerifyLoginMessage) currentMessage).getPassword();
-				if(this.verifyLogin(currentUsername, currentPassword))
-					this.sendMessage(new LoginSuccessMessage(this.loadPlayerData(currentUsername, 1)));				//set default clientID = 1
-				else
-					this.sendMessage(new OperationRejectedMessage("Benutzername oder Passwort falsch!"));
-			}
-			else if(currentMessage instanceof RegisterUserMessage)
-				if(this.createNewUser(((RegisterUserMessage) currentMessage).getUsername(), ((RegisterUserMessage) currentMessage).getPassword()))
-					this.sendMessage(new RegisterSuccessMessage());
-				else
-					this.sendMessage(new OperationRejectedMessage("Benutzername bereits vergeben!"));
-			else if(currentMessage instanceof LinkCharacterToUserMessage)
-				if(this.linkCharacterToUser(((LinkCharacterToUserMessage) currentMessage).getUsername(), ((LinkCharacterToUserMessage) currentMessage).getPlayerCharacter()))
-					this.sendMessage(new OperationPerformedMessage());
-				else
-					this.sendMessage(new OperationRejectedMessage("Fehler beim Erstellen des Charakters!"));
-			else if(currentMessage instanceof SavePlayerDataMessage)
-				this.savePlayerData(((SavePlayerDataMessage) currentMessage).getUsername(), ((SavePlayerDataMessage) currentMessage).getPlayerCharacter());
-			else if(currentMessage instanceof LoadHighscoreMessage)
-				this.sendMessage(new HighscoreDataMessage((this.loadHighscore(((LoadHighscoreMessage) currentMessage).getFilterAttribute()))));
+			this.closeConnection();
 		}
-		this.messageIsProcessing = false;
 	}
 	
 	/**
@@ -223,81 +165,7 @@ public class DataBaseController
 	}
 	
 	/**
-	 * reads the highscore data from the database and sorts it DESC by paramFilterAttribute
-	 * @param paramFilterAttribute the String attribute by which the retrieved data is sorted
-	 * @return highscore data stored in a Object[][]
-	 * @author Staufenberg, Thomas, 5820359 
-	 * */
-	private Object[][] loadHighscore(String paramFilterAttribute)
-	{
-		this.establishConnection();
-		
-		try(Statement stmt = this.dbConnection.createStatement(); ResultSet highscoreResult = stmt.executeQuery("SELECT alloc.username, monsterKillCount, numberOfDeaths, goldEarned, timePlayed FROM statistics JOIN(SELECT playerAllocation.username, statisticsID FROM registeredUser JOIN playerAllocation ON registeredUser.username = playerAllocation.username) as alloc ON statistics.statisticsID = alloc.statisticsID ORDER BY " + paramFilterAttribute + " DESC"))
-		{
-			int rowCount = 0;
-			Object[][] highscoreData = null;
-			if(highscoreResult.last())
-			{
-				rowCount = highscoreResult.getRow();
-				highscoreData = new Object[rowCount][5];
-				highscoreResult.beforeFirst();
-			}
-			
-			while(highscoreResult.next())
-			{
-				highscoreData[(highscoreResult.getRow() - 1)][0] = highscoreResult.getString(1);
-				for(int i = 1; i < 5; i++)
-					highscoreData[(highscoreResult.getRow() - 1)][i] = highscoreResult.getInt((i + 1));
-			}
-			return highscoreData;
-		}
-		catch(SQLException sqlE)
-		{
-			System.err.println("Fehler beim auslesen von Highscores\nDBController.loadHighscore()");
-			sqlE.printStackTrace();
-			//TODO handle exception
-			return null;
-		}
-		finally
-		{
-			this.closeConnection();
-		}
-	}
-	
-	
-	/**
-	 * verifies the correctness of the given set of username and password
-	 * @author Staufenberg, Thomas, 5820359
-	 * @param paramUsername username entered in the login panel
-	 * @param paramPassword password entered in the login panel
-	 * @return true: login successful</br>false: error on username or password
-	 * @author Staufenberg, Thomas, 5820359
-	 * */
-	private boolean verifyLogin(String paramUsername, String paramPassword)
-	{
-		this.establishConnection();
-		
-		try(Statement stmt = this.dbConnection.createStatement(); ResultSet registeredUserResult = stmt.executeQuery("SELECT password FROM registeredUser WHERE username = '" + paramUsername + "'"))
-		{
-			if(registeredUserResult.next())
-				if(registeredUserResult.getString(1).equals(paramPassword))
-					return true;
-			return false;
-		}
-		catch(SQLException sqlE)
-		{
-			System.err.println("Fehler beim verifizieren der Login-Daten\nDataBaseController.verfiyLogin()\n\n");
-			sqlE.printStackTrace();
-		}
-		finally
-		{
-			this.closeConnection();
-		}
-		return false;
-	}
-	
-	/**
-	 * identifies Item via slotID
+	 * identifies Item via slotID</br>is called by this.loadPlayerData()
 	 * @return ItemModel created with data read from the database
 	 * @param paramItemResult ResultSet of the item to be identified
 	 * @param paramInventoryResult ResultSet of the inventory the item belongs to
@@ -317,7 +185,7 @@ public class DataBaseController
 				return new ChestArmor(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6), paramItemResult.getInt(9));
 			case 4:
 				return new Boots(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6), paramItemResult.getInt(9));
-			case 5:				//two handed weapons are identified in the database by ID 5 but in the code via boolean isTwoHand = true AND slotID = 0
+			case 5:				//two handed weapons are identified in the database by slotID 5 but has slotID 0 ingame
 				return new TwoHandedWeapon(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6), paramItemResult.getInt(9));
 			case 6:				//HealthPotion is indicated by equipSlot = 6
 				return new HealthPotion(paramInventoryResult.getInt(3));
@@ -407,8 +275,50 @@ public class DataBaseController
 	}
 	
 	/**
+	 * reads the highscore data from the database and sorts it DESC by paramFilterAttribute
+	 * @param paramFilterAttribute the String attribute by which the retrieved data is sorted
+	 * @return highscore data stored in a Object[][]
+	 * @author Staufenberg, Thomas, 5820359 
+	 * */
+	private Object[][] loadHighscore(String paramFilterAttribute)
+	{
+		this.establishConnection();
+		
+		try(Statement stmt = this.dbConnection.createStatement(); ResultSet highscoreResult = stmt.executeQuery("SELECT alloc.username, monsterKillCount, numberOfDeaths, goldEarned, timePlayed FROM statistics JOIN(SELECT playerAllocation.username, statisticsID FROM registeredUser JOIN playerAllocation ON registeredUser.username = playerAllocation.username) as alloc ON statistics.statisticsID = alloc.statisticsID ORDER BY " + paramFilterAttribute + " DESC"))
+		{
+			int rowCount = 0;
+			Object[][] highscoreData = null;
+			if(highscoreResult.last())
+			{
+				rowCount = highscoreResult.getRow();
+				highscoreData = new Object[rowCount][5];
+				highscoreResult.beforeFirst();
+			}
+			
+			while(highscoreResult.next())
+			{
+				highscoreData[(highscoreResult.getRow() - 1)][0] = highscoreResult.getString(1);
+				for(int i = 1; i < 5; i++)
+					highscoreData[(highscoreResult.getRow() - 1)][i] = highscoreResult.getInt((i + 1));
+			}
+			return highscoreData;
+		}
+		catch(SQLException sqlE)
+		{
+			System.err.println("Fehler beim auslesen von Highscores\nDBController.loadHighscore()");
+			sqlE.printStackTrace();
+			//TODO handle exception
+			return null;
+		}
+		finally
+		{
+			this.closeConnection();
+		}
+	}
+	
+	/**
 	 * adds the Item to the database if not already done, updates inventorySlot of the item in the inventoryItemAllocation table</br> 
-	 * is called by savePlayerData()
+	 * is called by this.savePlayerData()
 	 * @param paramAddedItemList ArrayList<Integer> contains the itemID of all items added to the inventory during the current save process
 	 * @param paramToDeleteItemList ArrayList<Integer> contains the itemID of all items that might have to be removed from the database
 	 * @param paramItemResult ResultSet of the current item
@@ -448,6 +358,13 @@ public class DataBaseController
 		}
 	}
 	
+	/**
+	 * sets the itemID of the current itemSlot to defautl = 1 (database)</br>
+	 * adds the previously stored itemID to the deleteList if it is not a default item</br>is called by this.savePlayerData()
+	 * @param paramToDeleteItemList ArrayList<Integer> contains the itemID of all items that might have to be removed from the database
+	 * @param paramItemResult ResultSet of the currentItem
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	private void deleteItem(ArrayList<Integer> paramToDeleteItemList, ResultSet paramItemResult)
 	{
 		try(Statement stmt = this.dbConnection.createStatement())
@@ -464,7 +381,7 @@ public class DataBaseController
 	}
 	
 	/**
-	 * saves all relevant data of the given player to the database
+	 * saves all relevant data of the given player to the database</br>deletes unused items from the database
 	 * @param paramUsername name of the current player
 	 * @param paramPlayer the current player
 	 * @author Staufenberg, Thomas, 5820359
@@ -621,11 +538,41 @@ public class DataBaseController
 	}
 	
 	/**
-	 * verifies if the given username is not already taken</br>
-	 * only called by createNewUser() thus no connection.close() needed here (nested call)
+	 * verifies the correctness of the given set of username and password
 	 * @author Staufenberg, Thomas, 5820359
+	 * @param paramUsername username entered in the login panel
+	 * @param paramPassword password entered in the login panel
+	 * @return true: login successful</br>false: error on username or password
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	private boolean verifyLogin(String paramUsername, String paramPassword)
+	{
+		this.establishConnection();
+		
+		try(Statement stmt = this.dbConnection.createStatement(); ResultSet registeredUserResult = stmt.executeQuery("SELECT password FROM registeredUser WHERE username = '" + paramUsername + "'"))
+		{
+			if(registeredUserResult.next())
+				if(registeredUserResult.getString(1).equals(paramPassword))
+					return true;
+			return false;
+		}
+		catch(SQLException sqlE)
+		{
+			System.err.println("Fehler beim verifizieren der Login-Daten\nDataBaseController.verfiyLogin()\n\n");
+			sqlE.printStackTrace();
+		}
+		finally
+		{
+			this.closeConnection();
+		}
+		return false;
+	}
+	
+	/**
+	 * verifies if the given username is not already taken</br>called by this.createNewUser()
 	 * @param paramUsername username entered in the register panel
 	 * @return true: username not taken yet</br>false: username already taken
+	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	private boolean isValidUsername(String paramUsername)
 	{
@@ -644,8 +591,7 @@ public class DataBaseController
 	}
 	
 	/**
-	 * invokes username verification</br>
-	 * creates data sets for the given user in the following relations:</br>
+	 * invokes username verification</br>creates data sets for the given user in the following relations:</br>
 	 * -registeredUser</br>-saveGame</br>-statistics</br>-inventory</br>-inventoryItemAllocation</br>-playerAllocation
 	 * @param paramUsername username entered in the register panel
 	 * @param paramPassword password entered in the register panel
@@ -664,12 +610,14 @@ public class DataBaseController
 			{
 				this.dbConnection.setAutoCommit(false);			//begin transaction
 				
+				//insert data into db; create new rows, let db fill default values
 				stmt.executeUpdate("INSERT INTO registeredUser VALUES('" + paramUsername + "' ,'" + paramPassword + "')");
 				stmt.executeUpdate("INSERT INTO saveGame VALUES()");
 				stmt.executeUpdate("INSERT INTO statistics VALUES()");
 				stmt.executeUpdate("INSERT INTO inventory VALUES()");
 				
 				
+				//retrieve all previously by db generated ID's for further usage 
 				try(Statement saveGameIDStmt = this.dbConnection.createStatement(); ResultSet saveGameIDResult = saveGameIDStmt.executeQuery("SELECT max(saveGameID) FROM saveGame");
 					Statement statisticsIDStmt = this.dbConnection.createStatement(); ResultSet statisticsIDResult = statisticsIDStmt.executeQuery("SELECT max(statisticsID) FROM statistics");
 					Statement inventoryIDStmt = this.dbConnection.createStatement(); ResultSet inventoryIDResult = inventoryIDStmt.executeQuery("SELECT max(inventoryID) FROM inventory"))
@@ -683,6 +631,7 @@ public class DataBaseController
 					statisticsID = statisticsIDResult.getInt(1);
 				}
 				
+				//create inventory slots
 				try(PreparedStatement pstmt = this.dbConnection.prepareStatement("INSERT INTO inventoryItemAllocation(inventoryID, slotID, itemID) VALUES(" + inventoryID + ", ?, 1)"))
 				{
 					for(int i = 1; i <= 15; i++)
@@ -692,6 +641,7 @@ public class DataBaseController
 					}
 				}
 				
+				//link player in playerAllocation with previously created data sets via corresponding ID
 				stmt.executeUpdate("INSERT INTO playerAllocation(username, playerID, inventoryID, saveGameID, statisticsID) VALUES('" + paramUsername + "', 1, " + inventoryID + ", " + saveGameID + ", " + statisticsID +")");
 				
 				this.dbConnection.commit();							//end transaction
@@ -752,10 +702,13 @@ public class DataBaseController
 			{
 				this.dbConnection.setAutoCommit(false);				// begin transaction
 
+				//insert character into player
 				stmt.executeUpdate("INSERT INTO player(charImg, charName, hitpoints, attackValue, defenseValue) VALUES('" + paramPlayer.getImagePath() + "', '" + paramPlayer.getCharacterName() + "', " + paramPlayer.getCurrentLife() + ", " + paramPlayer.getAttack() + ", " + paramPlayer.getDefense() + ")");
 
+				//retrieve autogenerated playerID from db 
 				try (ResultSet playerIDResult = stmt.executeQuery("SELECT max(playerID) FROM player"))
 				{
+					//link player in playerAllocation to the given playerID
 					playerIDResult.next();
 					stmt.executeUpdate("UPDATE playerAllocation SET playerID = " + playerIDResult.getInt(1) + " WHERE username = '" + paramUsername + "'");
 				}
@@ -797,5 +750,67 @@ public class DataBaseController
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * called by ServerEngine_I for communication purpose</br>
+	 * adds the given Message to a list and starts the handling process if it is not already running
+	 * @param paramMessage the Message to receive
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	public void receiveMessage(Message paramMessage)
+	{
+		this.incomingMessageList.add(paramMessage);
+		if(!this.messageIsProcessing)
+			this.handleMessage();
+	}
+	
+	/**
+	 * called by this.receiveMessage(), iterates over incomingMessageList while not empty</br>
+	 * handles all incoming Messages
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	private void handleMessage()
+	{
+		if(!this.messageIsProcessing)
+			this.messageIsProcessing = true;
+		while(true)
+		{
+			Message currentMessage;
+			try
+			{
+				currentMessage = this.incomingMessageList.remove(0);
+			}
+			catch(IndexOutOfBoundsException indexExc)
+			{
+				//stop message handling if there is no message left
+				break;
+			}
+			
+			if(currentMessage instanceof VerifyLoginMessage)
+			{
+				String currentUsername = ((VerifyLoginMessage) currentMessage).getUsername(); 
+				String currentPassword = ((VerifyLoginMessage) currentMessage).getPassword();
+				if(this.verifyLogin(currentUsername, currentPassword))
+					this.sendMessage(new LoginSuccessMessage(this.loadPlayerData(currentUsername, 1)));				//set default clientID = 1 //TODO read clientID from LoginMessage
+				else
+					this.sendMessage(new OperationRejectedMessage("Benutzername oder Passwort falsch!"));
+			}
+			else if(currentMessage instanceof RegisterUserMessage)
+				if(this.createNewUser(((RegisterUserMessage) currentMessage).getUsername(), ((RegisterUserMessage) currentMessage).getPassword()))
+					this.sendMessage(new RegisterSuccessMessage());
+				else
+					this.sendMessage(new OperationRejectedMessage("Benutzername bereits vergeben!"));
+			else if(currentMessage instanceof LinkCharacterToUserMessage)
+				if(this.linkCharacterToUser(((LinkCharacterToUserMessage) currentMessage).getUsername(), ((LinkCharacterToUserMessage) currentMessage).getPlayerCharacter()))
+					this.sendMessage(new OperationPerformedMessage());
+				else
+					this.sendMessage(new OperationRejectedMessage("Fehler beim Erstellen des Charakters!"));
+			else if(currentMessage instanceof SavePlayerDataMessage)
+				this.savePlayerData(((SavePlayerDataMessage) currentMessage).getUsername(), ((SavePlayerDataMessage) currentMessage).getPlayerCharacter());
+			else if(currentMessage instanceof LoadHighscoreMessage)
+				this.sendMessage(new HighscoreDataMessage((this.loadHighscore(((LoadHighscoreMessage) currentMessage).getFilterAttribute()))));
+		}
+		this.messageIsProcessing = false;
 	}
 }

@@ -7,11 +7,11 @@ package message;
 public class RegisterUserMessage extends UserDataMessage
 {
 	/**
-	 * forwards username, password and receiverID to superclass
+	 * forwards username and password to superclass
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	public RegisterUserMessage(String paramUsername, String paramPassword)
 	{
-		super(200, paramUsername, paramPassword);
+		super(paramUsername, paramPassword);
 	}
 }

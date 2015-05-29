@@ -22,7 +22,6 @@ public abstract class ConsumableModel extends ItemModel
 		this.valueModificator = paramValueMod;
 		this.stackSize = paramStackSize;
 	}
-
 	
 	/**
 	 * abstract method to consume the current item

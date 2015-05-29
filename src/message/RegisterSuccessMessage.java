@@ -6,13 +6,4 @@ package message;
  * @author Staufenberg, Thomas, 5820359
  * */
 public class RegisterSuccessMessage extends Message
-{
-	/**
-	 * creates a new Message and sets the receiverID
-	 * @author Staufenberg, Thomas, 5820359
-	 * */
-	public RegisterSuccessMessage()
-	{
-		super(100);
-	}
-}
+{}

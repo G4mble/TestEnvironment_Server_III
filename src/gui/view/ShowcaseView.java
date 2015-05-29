@@ -589,8 +589,13 @@ public class ShowcaseView extends JFrame
 		this.setVisible(true);
 	}
 	
+	/**
+	 * reads all data to be displayed from the PlayerChatacter model</br>prepares data model objects to be displayed in JTables
+	 * @author Staufenberg, Thomas, 5820359 
+	 * */
 	private void initiateDataPool()
 	{
+		//retrieve data from PlayerCharacter
 		this.charName = this.activeCharacter.getCharacterName();
 		this.level = this.activeCharacter.getLevel();
 		this.experience = this.activeCharacter.getExperiencePoints();
@@ -608,6 +613,7 @@ public class ShowcaseView extends JFrame
 		this.timePlayed = this.statistics.getTimePlayed();
 		this.goldEarned = this.statistics.getGoldEarned();
 		
+		//set text values for corresponding JTextFields
 		this.txtfLife.setText(Integer.toString(this.hpValue));
 		this.txtfAtk.setText(Integer.toString(this.atkValue));
 		this.txtfDef.setText(Integer.toString(this.defValue));
@@ -621,6 +627,7 @@ public class ShowcaseView extends JFrame
 		this.txtFLevel.setText(Integer.toString(this.level));
 		this.txtFExperience.setText(Integer.toString(this.experience));
 		
+		//prepare inventoryTableRowData for usage in inventoryTable
 		for(int i = 0; i < 10; i++)
 		{
 			try
@@ -657,6 +664,7 @@ public class ShowcaseView extends JFrame
 			}
 		}
 		
+		//prepare equipmentTableRowData for usage in equipmentTable
 		for(int i = 0; i < 5; i++)
 		{
 			try
@@ -680,7 +688,12 @@ public class ShowcaseView extends JFrame
 		}
 	}
 	
-	public void initiateJTables()
+	/**
+	 * creates all required JTables with their corresponding data model</br>
+	 * embeds the table into a JScrollPane to allow scrollable tables
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	private void initiateJTables()
 	{
 		this.inventoryTable = new JTable(new DefaultTableModel(this.inventoryTableRowData, this.inventoryTableColumnNames));
 		this.inventoryTable.setEnabled(false);
@@ -725,6 +738,10 @@ public class ShowcaseView extends JFrame
 		getContentPane().add(this.equipmentScrollPane);
 	}
 	
+	/**
+	 * refreshes dataPool and updates inventory and equipment table when changes have been detected
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public void updateShowcaseView()
 	{
 		this.initiateDataPool();
@@ -734,9 +751,13 @@ public class ShowcaseView extends JFrame
 		this.globalInventoryJList.setSelectedIndex(0);
 	}
 	
-	public void switchCraftingMode(boolean paramToActivate)
+	/**
+	 * enables/disables all required components when the user switches to crafing mode or back
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	public void switchCraftingMode()
 	{
-		if(paramToActivate)
+		if(this.tglBtnCrafting.isSelected())
 		{
 			this.btnGenerateConsumable.setEnabled(false);
 			this.btnGenerateGold.setEnabled(false);
@@ -757,6 +778,10 @@ public class ShowcaseView extends JFrame
 		}
 	}
 	
+	/**
+	 * @return current item selected in the inventoryTable</br>uses JRadioButtons as identifier
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public ItemModel getSelectedItemFromInventory()
 	{
 		try
@@ -773,6 +798,10 @@ public class ShowcaseView extends JFrame
 		return null;
 	}
 	
+	/**
+	 * @return current item selected in the equipmentTable</br>uses JRadioButtons as identifier
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public EquipmentModel getSelectedItemFromEquipment()
 	{
 		for(Enumeration<AbstractButton> buttons = this.equipmentRadioBtnGroup.getElements(); buttons.hasMoreElements();)
@@ -784,41 +813,67 @@ public class ShowcaseView extends JFrame
 		return null;
 	}
 	
+	/**
+	 * @return the selected index for equipment generation
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public int getSelectedEquipmentToGenerate()
 	{
 		return this.combEquip.getSelectedIndex();
 	}
 	
+	/**
+	 * @return the selected index for consumable generation
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public int getSelectedConsumableToGenerate()
 	{
 		return this.combConsumable.getSelectedIndex();
 	}
 	
+	/**
+	 * the selected value for gold generation
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public int getSelectedGoldValueToGenerate()
 	{
 		return Integer.parseInt(this.spinGoldValue.getValue().toString());
 	}
 	
+	/**
+	 * adds the given itemName to the globalInventory for display purpose
+	 * @param paramItemName the itemName to be added
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public void addItemToGlobalInventory(String paramItemName)
 	{
 		this.globalInventoryListModel.addElement(paramItemName);
 	}
 	
+	/**
+	 * removes the itemName at the given index from the gobalInventory (display only)
+	 * @param paramIndex list position of the itemName to be removed
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public void removeItemFromGlobalInventory(int paramIndex)
 	{
 		this.globalInventoryListModel.remove(paramIndex);
 	}
 	
+	/**
+	 * @return position of the item currently selected in the golabInventory
+	 * @author Staufenberg, Thomas, 5820359 
+	 * */
 	public int getSelectedIDFromGlobalInventory()
 	{
 		return this.globalInventoryJList.getSelectedIndex();
 	}
 	
-	public boolean isCraftingModeActive()
-	{
-		return this.tglBtnCrafting.isSelected();
-	}
-	
+	/**
+	 * shows an error message depending on the given ID as JOptionPane.Warning_Message
+	 * @param paramErrorID ID of the errorMessage to be displayed
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public void displayErrorMessage(int paramErrorID)
 	{
 		String errorMessage = "";

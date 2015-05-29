@@ -17,9 +17,9 @@ import shared.item.TwoHandedWeapon;
  * */
 public class InventoryModel
 {
-	private int goldCount, armorPartsCount;				//armorParts are used as crafting material, can be gained by salvaging equipment
-	private final int INVENTORY_SIZE = 10;
-	private boolean isTwoHandEquipped = false;
+	private int goldCount, armorPartsCount;
+	private final int INVENTORY_SIZE;
+	private boolean isTwoHandEquipped;
 	private ArrayList<ItemModel> inventoryContentList;
 	private EquipmentModel[] equipmentList;							//equipSlotIDs: weaponHand: 0 ; shieldHand: 1 ; helmet: 2 ; chest: 3 ; boots: 4
 	private PlayerCharacter owningCharacter;
@@ -30,12 +30,15 @@ public class InventoryModel
 	 * */
 	public InventoryModel(int paramGoldCount, int paramArmorPartsCount, ArrayList<ItemModel> paramInventoryContentList, EquipmentModel[] paramEquipmentList)
 	{
+		this.INVENTORY_SIZE = 10;
 		this.goldCount = paramGoldCount;
 		this.armorPartsCount = paramArmorPartsCount;
 		this.inventoryContentList = paramInventoryContentList;
 		this.equipmentList = paramEquipmentList;
 		if(this.equipmentList[0] instanceof TwoHandedWeapon)
 			this.isTwoHandEquipped = true;
+		else
+			this.isTwoHandEquipped = false;
 	}
 	
 	/**
@@ -44,10 +47,16 @@ public class InventoryModel
 	 * */
 	public InventoryModel()
 	{
-		//TODO set final values: gold, maybe default equipment?
+		//TODO set final values: gold
 		this(50, 0, new ArrayList<ItemModel>(), new EquipmentModel[5]);
 	}
 	
+	/**
+	 * recalculates the players attributes everytime an equipment piece changes
+	 * @param paramEquipment the equipment to be considered
+	 * @param paramModifyPositive whethere the equipment is being equipped(true) or removed from equipment(false)
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	private void modifyPlayerAttributes(EquipmentModel paramEquipment, boolean paramModifyPositive)
 	{
 		int currentMaxLife = this.owningCharacter.getMaximumLife();
@@ -72,14 +81,30 @@ public class InventoryModel
 		this.owningCharacter.setDefense(currentDef);
 		
 		if(this.owningCharacter.getCurrentLife() > currentMaxLife)
+			this.owningCharacter.setCurrentLife(currentMaxLife);
+	}
+
+	/**
+	 * iterates over the equipment list and updates the players attributes for each item equipped
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	public void initiatePlayerAttributes()
+	{
+		for(int i = 0; i < this.equipmentList.length; i++)
+		{
+			EquipmentModel currentEquipment = this.equipmentList[i];
+			if(!(currentEquipment == null))
+				this.modifyPlayerAttributes(currentEquipment, true);
+		}
+		if(this.owningCharacter.getCurrentLife() < this.owningCharacter.getMaximumLife())
 			this.owningCharacter.setCurrentLife(this.owningCharacter.getMaximumLife());
 	}
 	
 	/**
 	 * tries to add given item to the inventoryContentList
+	 * @param paramItem item to be added to the inventory
 	 * @return true: item successfully added</br>false: inventory full
 	 * @author Staufenberg, Thomas, 5820359
-	 * @param paramItem item to be added to the inventory
 	 * */
 	public boolean addItemToInventory(ItemModel paramItem)
 	{
@@ -124,10 +149,30 @@ public class InventoryModel
 	}
 	
 	/**
+	 * tries to add the given Item to the inventory</br>
+	 * removes the Item from the equipment if the previous operation returned true or paramAddToInventory is false</br>
+	 * @param paramItem the Item to be removed
+	 * @param paramAddToInventory wheter the item should be added to the inventory (true) or not (false)
+	 * @return true: Item successfully removed (and added to the inventory[optional])</br>false: inventory full
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	public boolean removeItemFromEquip(EquipmentModel paramItem, boolean paramAddToInventory)
+	{
+		if(paramAddToInventory)
+			if(!(this.addItemToInventory(paramItem)))
+				return false;
+		
+		this.equipmentList[paramItem.getEquipSlotID()] = null;
+		if(paramItem instanceof TwoHandedWeapon)
+			this.isTwoHandEquipped = false;
+		this.modifyPlayerAttributes(paramItem, false);
+		return true;
+	}
+	
+	/**
 	 * equips the given item to the player charakter, removes the equipped item from the inventory</br>
 	 * adds the previously equipped item to the inventory if not null
 	 * @param paramItem the EquipmentModel to be equipped
-	 * @param paramSlotID ID of the slot where the item is to be equipped
 	 * @return true: item successfully equipped</br>false: inventory full or characterLevel too low
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
@@ -167,27 +212,6 @@ public class InventoryModel
 	}
 	
 	/**
-	 * tries to add the given Item to the inventory</br>
-	 * removes the Item from the equipment if the previous operation returned true</br>
-	 * @param paramItem the Item to be removed
-	 * @param paramAddToInventory wheter the item should be added to the inventory (true) or not (false)
-	 * @return true: Item successfully removed and added to the inventory</br>false: inventory full
-	 * @author Staufenberg, Thomas, 5820359
-	 * */
-	public boolean removeItemFromEquip(EquipmentModel paramItem, boolean paramAddToInventory)
-	{
-		if(paramAddToInventory)
-			if(!(this.addItemToInventory(paramItem)))
-				return false;
-		
-		this.equipmentList[paramItem.getEquipSlotID()] = null;
-		if(paramItem instanceof TwoHandedWeapon)
-			this.isTwoHandEquipped = false;
-		this.modifyPlayerAttributes(paramItem, false);
-		return true;
-	}
-	
-	/**
 	 * salvages the given Item, this results in the Item being destroyed</br>
 	 * adds the armorPartsRevenue of the salvaged Item to the players armorPartsCount
 	 * @param paramItem the Item to be salvaged
@@ -201,7 +225,8 @@ public class InventoryModel
 	}
 	
 	/**
-	 * sells the given Item</br>adds the itemGoldValue of the given Item to the players goldCount
+	 * sells the given Item, this results in the Item being destroyed</br>
+	 * adds the itemGoldValue of the given Item to the players goldCount
 	 * @param paramItem the Item to be sold
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
@@ -215,8 +240,8 @@ public class InventoryModel
 	
 	/**
 	 * increases/decreases the goldCound by the given value
-	 * @author Staufenberg, Thomas, 5820359
 	 * @param paramModificator gold amount to be added/subtracted
+	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	public void modifyGoldCount(int paramModificator)
 	{
@@ -225,8 +250,8 @@ public class InventoryModel
 	
 	/**
 	 * increases/decreases the armorPartsCount by the given value
-	 * @author Staufenberg, Thomas, 5820359
 	 * @param paramModificator amount of armorParts to be added/subtracted
+	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	public void modifyArmorPartsCount(int paramModificator)
 	{
@@ -288,18 +313,11 @@ public class InventoryModel
 		this.equipmentList = paramEquipmentList;
 	}
 
-	public void initiatePlayerAttributes()
-	{
-		for(int i = 0; i < this.equipmentList.length; i++)
-		{
-			EquipmentModel currentEquipment = this.equipmentList[i];
-			if(!(currentEquipment == null))
-				this.modifyPlayerAttributes(currentEquipment, true);
-		}
-		if(this.owningCharacter.getCurrentLife() < this.owningCharacter.getMaximumLife())
-			this.owningCharacter.setCurrentLife(this.owningCharacter.getMaximumLife());
-	}
-	
+	/**
+	 * sets the owner attribute of the current inventory
+	 * @param paramOwner the PlayerCharacter the current inventory belongs to
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public void setOwner(PlayerCharacter paramOwner)
 	{
 		this.owningCharacter = paramOwner;

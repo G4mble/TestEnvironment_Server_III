@@ -8,7 +8,6 @@ import platform.ProgramController;
  * */
 public class TestEnvironmentMain
 {
-
 	/**
 	 * main method, starts the program by creating new ProgramController
 	 * @author Staufenberg, Thomas, 5820359
@@ -17,5 +16,4 @@ public class TestEnvironmentMain
 	{
 		new ProgramController();
 	}
-
 }

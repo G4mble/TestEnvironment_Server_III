@@ -48,6 +48,13 @@ public class ShowcaseController implements ActionListener
 		this.showcaseView = new ShowcaseView(this, paramUsername, paramPlayer);
 	}
 	
+	/**
+	 * generates new equipment according to given selectionID</br>is used by 'random world drops' and the crafting system</br>
+	 * adds the generated item either to the globalInventory(randomDrop) or the players inventory (crafting)
+	 * @param paramSelectionID equipSlotID of the item to be generated
+	 * @param paramIsCrafted wether the item is generated in a crafting process(true) or 'randomly dropped'
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	private void generateNewEquipmentByID(int paramSelectionID, boolean paramIsCrafted)
 	{
 		Random randomGenerator = new Random();
@@ -170,6 +177,12 @@ public class ShowcaseController implements ActionListener
 		}
 	}
 	
+	/**
+	 * invokes crafting process</br>calculates crafting costs and perfoms a consistency check on these costs</br>
+	 * calls this.generateNewEquipmentByID() if the process is good to go
+	 * @param paramSelectionID equipSlotID of the item to be generated
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	private void craftEquipmentByID(int paramSelectionID)
 	{
 		int armorPartsCosts = ((Math.max(1, (this.activePlayer.getLevel() / 5))) * 11);
@@ -189,7 +202,12 @@ public class ShowcaseController implements ActionListener
 			this.showcaseView.displayErrorMessage(5);
 	}
 	
-	public void generateNewConsumableByID(int paramSelectionID)
+	/**
+	 * creates a new consumable depending on the selectionID
+	 * @param paramSelectionID ID of the consumable to be generated
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	private void generateNewConsumableByID(int paramSelectionID)
 	{
 		Random randomGenerator = new Random();
 		int currentStackSize = randomGenerator.nextInt(3) + 1;
@@ -208,7 +226,12 @@ public class ShowcaseController implements ActionListener
 		this.showcaseView.addItemToGlobalInventory(currentItem.getItemName());
 	}
 	
-	public void generateNewGoldStack(int paramSelectedValue)
+	/**
+	 * generates a new GoldStack
+	 * @param paramSelectedValue amount of gold the GoldStack is worth
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	private void generateNewGoldStack(int paramSelectedValue)
 	{
 		GoldStack currentGoldStack = new GoldStack(paramSelectedValue);
 		this.globalInventoryList.add(currentGoldStack);
@@ -330,12 +353,7 @@ public class ShowcaseController implements ActionListener
 			}
 		}
 		else if(actionCommand.equals("tgl_crafting"))
-		{
-			if(this.showcaseView.isCraftingModeActive())
-				this.showcaseView.switchCraftingMode(true);
-			else
-				this.showcaseView.switchCraftingMode(false);
-		}
+			this.showcaseView.switchCraftingMode();
 		else if(actionCommand.equals("craft_equip"))
 			this.craftEquipmentByID(this.showcaseView.getSelectedEquipmentToGenerate());
 		else if(actionCommand.equals("highscore"))
@@ -353,7 +371,12 @@ public class ShowcaseController implements ActionListener
 		this.showcaseView.updateShowcaseView();
 	}
 	
-	public void sendMessage(Message paramMessage)
+	/**
+	 * processes outgoing Messages and calls the receiveMessage method of the respective target address
+	 * @param paramMessage the Message to be send
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	private void sendMessage(Message paramMessage)
 	{
 		this.programController.receiveMessage(paramMessage);
 	}

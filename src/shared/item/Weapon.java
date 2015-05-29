@@ -7,9 +7,8 @@ package shared.item;
 public abstract class Weapon extends EquipmentModel
 {	
 	/**
-	 * forwards paramID, paramGoldValue, paramName, paramImagePath, paramLvlRestr, paramAtkValue, paramDefValue, paramHpValue to super constructor</br>
-	 * paramSlotID has to be set to 0</br>
-	 * stores remaining parameters in global variables
+	 * forwards paramID, paramGoldValue, paramName, paramImagePath, paramLvlRestr, paramAtkValue, paramDefValue, paramHpValue, paramArmorPartsRevenue to super constructor</br>
+	 * paramSlotID is set to 0
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	public Weapon(int paramID, int paramGoldValue, String paramName, String paramImagePath, int paramLvlRestr, int paramAtkValue, int paramDefValue, int paramHpValue, int paramArmorPartsRevenue)

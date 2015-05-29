@@ -9,12 +9,11 @@ public abstract class UserDataMessage extends Message
 	private String username, password;
 	
 	/**
-	 * stores username and password in global variables, forwards receiverID to superclass
+	 * stores username and password in global variables
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	public UserDataMessage(int paramReceiverID, String paramUsername, String paramPassword)
+	public UserDataMessage(String paramUsername, String paramPassword)
 	{
-		super(paramReceiverID);
 		this.username = paramUsername;
 		this.password = paramPassword;
 	}

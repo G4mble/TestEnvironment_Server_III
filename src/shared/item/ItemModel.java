@@ -42,7 +42,7 @@ public abstract class ItemModel
 	}
 	
 	/**
-	 * constructor used when creating a NEW item -> ensures itemID = -1
+	 * constructor used when creating a NEW item -> ensures itemID = -1</br>
 	 * forwards all values to second constructor
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
@@ -54,8 +54,8 @@ public abstract class ItemModel
 	/**
 	 * moves the current item to the given player inventory
 	 * @param paramPlayer the PlayerCharacter model of the player that wants to pick up the item
-	 * @author Staufenberg, Thomas, 5820359
 	 * @return true: item successfully added</br>false: inventory full
+	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	public boolean pickup(PlayerCharacter paramPlayer)
 	{
@@ -63,10 +63,10 @@ public abstract class ItemModel
 	}
 	
 	/**
-	 * drops the current item into the worldMap
+	 * drops the current item to the globalInventory
 	 * @param paramPlayer PlayerCharacter model of the player that wants to drop the item
 	 * @param paramGlobalInventory globalInventory of the level in which player is currently located
-	 * @return true: item successfully dropped</br>false: item not in inventory OR error during this.removeFromEquip()
+	 * @return true: item successfully dropped</br>false: item not in inventory OR error during InventoryModel.removeFromEquip()
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	public boolean drop(PlayerCharacter paramPlayer, ArrayList<ItemModel> paramGlobalInventory)
@@ -188,5 +188,4 @@ public abstract class ItemModel
 	{
 		return this.itemImage;
 	}
-
 }

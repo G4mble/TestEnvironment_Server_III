@@ -9,20 +9,38 @@ import shared.item.OneHandedWeapon;
 import shared.item.Shield;
 import shared.statistics.StatisticsModel;
 
+/**
+ * implementation of the warrior class (playable character)
+ * @author Staufenberg, Thomas, 5820359
+ * */
 public class Warrior extends PlayerCharacter
 {
 
+	/**
+	 * secondary constructor, calls primary constructor</br>
+	 * sets all default values and generates default equipment</br>
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public Warrior(int clientId)
 	{
 		this(clientId, 19, 0, 100, 7, 3, 345, "Krieger", "krieger.png", new InventoryModel(), new StatisticsModel());
 		this.generateDefaultEquipment();
 	}
 	
+	/**
+	 * primary constructor, calls super constructor</br>
+	 * creates new Warrior and forwards all given values to the superclass
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	public Warrior(int clientId, int level, int experiencePoints, int life, int attack, int defense, int characterId, String characterName, String imagePath, InventoryModel inventory, StatisticsModel statistics)
 	{
 		super(clientId, level, experiencePoints, life, attack, defense, characterId, characterName, -1, -1, true, imagePath, inventory, statistics);
 	}
 
+	/**
+	 * generates default equipment for the warrior
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
 	private void generateDefaultEquipment()
 	{
 		EquipmentModel[] defaultEquip = new EquipmentModel[5];

@@ -69,7 +69,11 @@ public class UserInputView extends JFrame
 		txtFUsername = new JTextField();
 		txtFUsername.setBounds(99, 11, 119, 22);
 		getContentPane().add(txtFUsername);
+		
 		txtFUsername.setColumns(10);
+		txtFPassword = new JPasswordField();
+		txtFPassword.setBounds(99, 44, 119, 21);
+		getContentPane().add(txtFPassword);
 		
 		JLabel lblUsername = new JLabel("Benutzername:");
 		lblUsername.setBounds(10, 11, 94, 22);
@@ -90,10 +94,6 @@ public class UserInputView extends JFrame
 		btnCancel.addActionListener(paramLoginController);
 		btnCancel.setActionCommand("cancel");
 		getContentPane().add(btnCancel);
-		
-		txtFPassword = new JPasswordField();
-		txtFPassword.setBounds(99, 44, 119, 21);
-		getContentPane().add(txtFPassword);
 		
 		this.setResizable(false);
 		this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);

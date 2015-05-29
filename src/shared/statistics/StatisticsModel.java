@@ -105,5 +105,4 @@ public class StatisticsModel
 	{
 		this.timePlayed += paramValue;
 	}
-
 }
