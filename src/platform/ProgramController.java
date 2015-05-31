@@ -99,8 +99,8 @@ public class ProgramController
 	 * */
 	public void initiateRegistrationProcess(String paramUsername, String paramPassword, int paramCharID)
 	{
-		if((paramPassword.length() < 4) || (paramUsername.length() < 4))
-			this.rejectOperation("Benutzername und Passwort muessen jeweils mindestens 4 Zeichen lang sein!");
+		if((paramPassword.length() < 4) || (paramUsername.length() < 4) || (paramUsername.length() > 30) || (paramPassword.length() > 30))
+			this.rejectOperation("Benutzername und Passwort muessen jeweils zwischen 4 und 30 Zeichen lang sein!");
 		else
 		{
 			this.activeUsername = paramUsername;

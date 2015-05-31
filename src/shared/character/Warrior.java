@@ -23,7 +23,7 @@ public class Warrior extends PlayerCharacter
 	 * */
 	public Warrior(int clientId)
 	{
-		this(clientId, 19, 0, 100, 7, 3, 345, "Krieger", "krieger.png", new InventoryModel(), new StatisticsModel());
+		this(clientId, 1, 0, 100, 7, 3, 345, "Krieger", "krieger.png", new InventoryModel(), new StatisticsModel());
 		this.generateDefaultEquipment();
 	}
 	

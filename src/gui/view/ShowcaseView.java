@@ -894,7 +894,7 @@ public class ShowcaseView extends JFrame
 				break;
 			case 5:
 				int armorPartsCosts = ((Math.max(1, (this.activeCharacter.getLevel() / 5))) * 6);
-				int goldCosts = (int)(((double)((double)((double)this.activeCharacter.getLevel() / (double)15) * (double)900) * (double)((double)this.activeCharacter.getLevel() / (double)36)) + 20);
+				int goldCosts = (int)((((this.activeCharacter.getLevel() / (double)15) * 900) * (this.activeCharacter.getLevel() / (double)36)) + 20);
 				errorMessage = "Sie haben nicht genuegend Ressourcen um dieses Item herzustellen!\nSie benoetigen mindestens " + armorPartsCosts + " Ruestungsteile und " + goldCosts + " Gold um ein Item dieser Stufe herstellen zu koennen!";
 				break;
 		}

@@ -33,7 +33,6 @@ public class ShowcaseController implements ActionListener
 	private ShowcaseView showcaseView;
 	private ProgramController programController;
 	private PlayerCharacter activePlayer;
-	private int currentPlayerLevel;
 	private String activeUsername;
 	private ArrayList<ItemModel> globalInventoryList;
 	
@@ -44,7 +43,6 @@ public class ShowcaseController implements ActionListener
 	public ShowcaseController(ProgramController paramProgramController, String paramUsername, PlayerCharacter paramPlayer)
 	{
 		this.activePlayer = paramPlayer;
-		this.currentPlayerLevel = this.activePlayer.getLevel();
 		this.activeUsername = paramUsername;
 		this.globalInventoryList = new ArrayList<>();
 		this.programController = paramProgramController;
@@ -61,11 +59,12 @@ public class ShowcaseController implements ActionListener
 	private void generateNewEquipment(int paramSelectionID, boolean paramIsCrafted)
 	{
 		Random randomGenerator = new Random();
+		int currentPlayerLevel = this.activePlayer.getLevel();
 		//calculate range used to generate some random values
-		int range = (int) ((5 / (double) 7) + ( this.currentPlayerLevel * (2 / (double) 7)));
+		int range = (int) ((5 / (double) 7) + (currentPlayerLevel * (2 / (double) 7)));
 		int currentID = -1;
 		//calculate levelRestriction depending on playerLevel and if the item is not crafted add a random value (0;1)
-		int currentLevelRestriction = this.currentPlayerLevel;
+		int currentLevelRestriction = currentPlayerLevel;
 		if(!paramIsCrafted)
 			currentLevelRestriction += randomGenerator.nextInt(2);
 		int currentAtkValue = 0;
@@ -188,8 +187,9 @@ public class ShowcaseController implements ActionListener
 	private void craftEquipmentByID(int paramSelectionID)
 	{
 		InventoryModel currentInventory = this.activePlayer.getInventory();
-		int armorPartsCosts = ((Math.max(1, (this.currentPlayerLevel / 5))) * 6);
-		int goldCosts = (int)((((this.currentPlayerLevel / (double)15) * 900) * (this.currentPlayerLevel / (double)36)) + 20);
+		int currentPlayerLevel = this.activePlayer.getLevel();
+		int armorPartsCosts = ((Math.max(1, (currentPlayerLevel / 5))) * 6);
+		int goldCosts = (int)((((currentPlayerLevel / (double)15) * 900) * (currentPlayerLevel / (double)36)) + 20);
 		if((currentInventory.getArmorPartsCount() >= armorPartsCosts) && (currentInventory.getGoldCount() >= goldCosts))
 		{
 			if((currentInventory.getInventoryContentList().size()) < (currentInventory.getInventorySize()))
