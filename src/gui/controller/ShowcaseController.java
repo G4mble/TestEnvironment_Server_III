@@ -8,6 +8,7 @@ import java.util.Random;
 import message.Message;
 import message.SavePlayerDataMessage;
 import platform.ProgramController;
+import shared.InventoryModel;
 import shared.character.PlayerCharacter;
 import shared.item.Boots;
 import shared.item.ChestArmor;
@@ -32,6 +33,7 @@ public class ShowcaseController implements ActionListener
 	private ShowcaseView showcaseView;
 	private ProgramController programController;
 	private PlayerCharacter activePlayer;
+	private int currentPlayerLevel;
 	private String activeUsername;
 	private ArrayList<ItemModel> globalInventoryList;
 	
@@ -42,6 +44,7 @@ public class ShowcaseController implements ActionListener
 	public ShowcaseController(ProgramController paramProgramController, String paramUsername, PlayerCharacter paramPlayer)
 	{
 		this.activePlayer = paramPlayer;
+		this.currentPlayerLevel = this.activePlayer.getLevel();
 		this.activeUsername = paramUsername;
 		this.globalInventoryList = new ArrayList<>();
 		this.programController = paramProgramController;
@@ -55,17 +58,16 @@ public class ShowcaseController implements ActionListener
 	 * @param paramIsCrafted wether the item is generated in a crafting process(true) or 'randomly dropped'
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	private void generateNewEquipmentByID(int paramSelectionID, boolean paramIsCrafted)
+	private void generateNewEquipment(int paramSelectionID, boolean paramIsCrafted)
 	{
 		Random randomGenerator = new Random();
-		int currentPlayerLevel = this.activePlayer.getLevel();
 		//calculate range used to generate some random values
-		int range = (int) (((double) 5 / (double) 7) + ((double) currentPlayerLevel * ((double) 2 / (double) 7)));
+		int range = (int) ((5 / (double) 7) + ( this.currentPlayerLevel * (2 / (double) 7)));
 		int currentID = -1;
 		//calculate levelRestriction depending on playerLevel and if the item is not crafted add a random value (0;1)
-		int currentLevelRestriction = currentPlayerLevel;
+		int currentLevelRestriction = this.currentPlayerLevel;
 		if(!paramIsCrafted)
-			currentLevelRestriction += + randomGenerator.nextInt(2);
+			currentLevelRestriction += randomGenerator.nextInt(2);
 		int currentAtkValue = 0;
 		int currentDefValue = 0;
 		int currentHpValue = 0;
@@ -74,16 +76,16 @@ public class ShowcaseController implements ActionListener
 		if(paramSelectionID < 2)
 		{
 			//calculate base values
-			currentAtkValue = (int)(((double)(currentLevelRestriction * 4) / (double)9) + 4 + randomGenerator.nextInt(range));
-			currentDefValue = (int)((double)(currentLevelRestriction - 1) * (double)((double)4 / (double)9) + 2 + randomGenerator.nextInt(range));
-			currentHpValue = (int)(((double)(currentLevelRestriction - 4) * (double)((double)4 / (double)10)) + 2 + randomGenerator.nextInt(range));
+			currentAtkValue = ((currentLevelRestriction * 4) / 9) + 4 + randomGenerator.nextInt(range);
+			currentDefValue = (int)((currentLevelRestriction - 1) * (4 / (double)9) + 2 + randomGenerator.nextInt(range));
+			currentHpValue = (int)(((currentLevelRestriction - 4) * (4 / (double)10)) + 2 + randomGenerator.nextInt(range));
 			//add bonus/malus to base values depending on probability
 			if(randomGenerator.nextInt(100) >= 80)
 				currentDefValue *= randomGenerator.nextInt(2);
-			if(randomGenerator.nextInt(100) >= 80)
+			if(randomGenerator.nextInt(100) >= 90)
 				currentHpValue *= randomGenerator.nextInt(2);
 			if(randomGenerator.nextInt(100) >= 90)
-				currentAtkValue -= randomGenerator.nextInt(((int) Math.round((double)range/(double)2)));
+				currentAtkValue -= randomGenerator.nextInt(((int) Math.round(range/(double)2)));
 			//add random bonus values for two hand weapons
 			if(paramSelectionID == 1)
 			{
@@ -96,12 +98,12 @@ public class ShowcaseController implements ActionListener
 		else
 		{
 			//calculate base values
-			currentAtkValue = (int)((double)(currentLevelRestriction - 1) * (double)((double)4 / (double)9) + 2 + randomGenerator.nextInt(range));
-			currentDefValue = (int)(((double)(currentLevelRestriction * 4) / (double)9) + 4 + randomGenerator.nextInt(range));
-			currentHpValue = (int)(((double)(currentLevelRestriction - 3) * (double)((double)4 / (double)10)) + 1 + randomGenerator.nextInt(range));
+			currentAtkValue = (int)((currentLevelRestriction - 1) * (4 / (double)9) + 2 + randomGenerator.nextInt(range));
+			currentDefValue = ((currentLevelRestriction * 4) / 9) + 4 + randomGenerator.nextInt(range);
+			currentHpValue = (int)(((currentLevelRestriction - 3) * (4 / (double)10)) + 1 + randomGenerator.nextInt(range));
 			//add bonus/malus to base values depending on probability
 			if(randomGenerator.nextInt(100) >= 90)
-				currentDefValue -= randomGenerator.nextInt(((int) Math.round((double)range/(double)2)));
+				currentDefValue -= randomGenerator.nextInt(((int) Math.round(range/(double)2)));
 			if(randomGenerator.nextInt(100) >= 90)
 				currentHpValue *= randomGenerator.nextInt(2);
 			if(randomGenerator.nextInt(100) >= 80)
@@ -109,7 +111,7 @@ public class ShowcaseController implements ActionListener
 		}
 		
 		//calculate gold value
-		int currentGoldValue = (int)((double)(currentAtkValue + currentDefValue + currentHpValue) * (double)((double)currentLevelRestriction / (double)5) + 1);
+		int currentGoldValue = (int)((currentAtkValue + currentDefValue + currentHpValue) * (currentLevelRestriction / (double)5) + 1);
 		
 		//modify item values even more if the item got crafted
 		if(paramIsCrafted)
@@ -138,7 +140,7 @@ public class ShowcaseController implements ActionListener
 			if(randomGenerator.nextInt(100) >= 97)
 				currentHpValue *= ((double)2 - (double)randomGenerator.nextDouble());
 			
-			currentGoldValue = (int)((double)(currentAtkValue + currentDefValue + currentHpValue) * (double)((double)currentLevelRestriction / (double)2) + 1);
+			currentGoldValue = (int)((currentAtkValue + currentDefValue + currentHpValue) * (currentLevelRestriction / (double)2) + 1);
 		}
 		
 		EquipmentModel currentItem = null;
@@ -185,15 +187,16 @@ public class ShowcaseController implements ActionListener
 	 * */
 	private void craftEquipmentByID(int paramSelectionID)
 	{
-		int armorPartsCosts = ((Math.max(1, (this.activePlayer.getLevel() / 5))) * 11);
-		int goldCosts = (Math.max(1, ((this.activePlayer.getLevel() / 5) * 945)));
-		if((this.activePlayer.getInventory().getArmorPartsCount() >= armorPartsCosts) &&(this.activePlayer.getInventory().getGoldCount() >= goldCosts))
+		InventoryModel currentInventory = this.activePlayer.getInventory();
+		int armorPartsCosts = ((Math.max(1, (this.currentPlayerLevel / 5))) * 6);
+		int goldCosts = (int)((((this.currentPlayerLevel / (double)15) * 900) * (this.currentPlayerLevel / (double)36)) + 20);
+		if((currentInventory.getArmorPartsCount() >= armorPartsCosts) && (currentInventory.getGoldCount() >= goldCosts))
 		{
-			if((this.activePlayer.getInventory().getInventoryContentList().size()) < (this.activePlayer.getInventory().getInventorySize()))
+			if((currentInventory.getInventoryContentList().size()) < (currentInventory.getInventorySize()))
 			{
-				this.generateNewEquipmentByID(this.showcaseView.getSelectedEquipmentToGenerate(), true);
-				this.activePlayer.getInventory().modifyArmorPartsCount(-armorPartsCosts);
-				this.activePlayer.getInventory().modifyGoldCount(-goldCosts);
+				this.generateNewEquipment(paramSelectionID, true);
+				currentInventory.modifyArmorPartsCount(-armorPartsCosts);
+				currentInventory.modifyGoldCount(-goldCosts);
 			}
 			else
 				this.showcaseView.displayErrorMessage(4);
@@ -210,7 +213,7 @@ public class ShowcaseController implements ActionListener
 	private void generateNewConsumableByID(int paramSelectionID)
 	{
 		Random randomGenerator = new Random();
-		int currentStackSize = randomGenerator.nextInt(3) + 1;
+		int currentStackSize = Math.max(1, (randomGenerator.nextInt(3)));
 		ConsumableModel currentItem = null; 
 		
 		switch(paramSelectionID)
@@ -306,7 +309,7 @@ public class ShowcaseController implements ActionListener
 			switch(actionCommand.substring(9))
 			{
 				case "equip":
-					this.generateNewEquipmentByID(this.showcaseView.getSelectedEquipmentToGenerate(), false);
+					this.generateNewEquipment(this.showcaseView.getSelectedEquipmentToGenerate(), false);
 					break;
 				case "consumable":
 					this.generateNewConsumableByID(this.showcaseView.getSelectedConsumableToGenerate());

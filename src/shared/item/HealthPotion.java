@@ -9,13 +9,25 @@ import shared.character.PlayerCharacter;
 public class HealthPotion extends ConsumableModel
 {
 	/**
-	 * sets itemID, itemGoldValue, itemName, itemImagePath, valueModificator, stackSize and forwards these values to the super constructor
+	 * secondary constructor, calls primary constructor</br>
+	 * sets quickSlotID to default -1
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	public HealthPotion(int paramStackSize)
 	{
-		//TODO set correct final values
-		super(2, 5, "Heiltrank", "heiltrank.png", 40, paramStackSize);
+		this(paramStackSize, -1);
+	}
+
+	/**
+	 * primary constructor</br>
+	 * sets itemID, itemGoldValue, itemName, itemImagePath, valueModificator and stackSize</br>
+	 * forwards these values, stackSize and quickSlotID to the super constructor
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	public HealthPotion(int paramStackSize, int paramQuickSlotID)
+	{
+		//TODO set final values
+		super(2, 5, "Heiltrank", "heiltrank.png", 40, paramStackSize, paramQuickSlotID);
 	}
 	
 	/**

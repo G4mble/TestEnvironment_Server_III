@@ -131,7 +131,7 @@ public class DataBaseController
 		{
 			stmt.addBatch("CREATE TABLE IF NOT EXISTS inventory(inventoryID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, goldCount INT NOT NULL DEFAULT 0, armorPartsCount INT NOT NULL DEFAULT 0, healthPotionCount INT NOT NULL DEFAULT 0, manaPotionCount INT NOT NULL DEFAULT 0)");
 			stmt.addBatch("CREATE TABLE IF NOT EXISTS item(itemID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, equipSlot INT NOT NULL, attackValue INT NOT NULL, defenseValue INT NOT NULL, hpValue INT NOT NULL, levelRestriction INT NOT NULL, itemPrice INT NOT NULL, armorPartsRevenue INT NOT NULL)");
-			stmt.addBatch("CREATE TABLE IF NOT EXISTS inventoryitemallocation(allocationID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, inventoryID INT NOT NULL, slotID INT NOT NULL, itemID INT NOT NULL, CONSTRAINT FOREIGN KEY(inventoryID) REFERENCES inventory(inventoryID), CONSTRAINT FOREIGN KEY(itemID) REFERENCES item(itemID))");
+			stmt.addBatch("CREATE TABLE IF NOT EXISTS inventoryitemallocation(allocationID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, inventoryID INT NOT NULL, slotID INT NOT NULL, itemID INT NOT NULL, quickSlotID INT NOT NULL DEFAULT -1, CONSTRAINT FOREIGN KEY(inventoryID) REFERENCES inventory(inventoryID), CONSTRAINT FOREIGN KEY(itemID) REFERENCES item(itemID))");
 			stmt.addBatch("CREATE TABLE IF NOT EXISTS player(playerID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, charImg VARCHAR(200) NOT NULL, charName VARCHAR(30) NOT NULL, hitpoints INT NOT NULL, attackValue INT NOT NULL, defenseValue INT NOT NULL, currentLevel INT NOT NULL DEFAULT 1, experience INT NOT NULL DEFAULT 0)");
 			stmt.addBatch("CREATE TABLE IF NOT EXISTS registereduser(username VARCHAR(30) NOT NULL PRIMARY KEY, password VARCHAR(30) NOT NULL)");
 			stmt.addBatch("CREATE TABLE IF NOT EXISTS savegame(saveGameID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, currentStoryLevel INT NOT NULL DEFAULT 1)");
@@ -188,9 +188,9 @@ public class DataBaseController
 			case 5:				//two handed weapons are identified in the database by slotID 5 but has slotID 0 ingame
 				return new TwoHandedWeapon(paramItemResult.getInt(2), paramItemResult.getInt(8), paramItemResult.getInt(7), paramItemResult.getInt(4), paramItemResult.getInt(5), paramItemResult.getInt(6), paramItemResult.getInt(9));
 			case 6:				//HealthPotion is indicated by equipSlot = 6
-				return new HealthPotion(paramInventoryResult.getInt(3));
+				return new HealthPotion(paramInventoryResult.getInt(3), paramItemResult.getInt(10));
 			case 7:				//ManaPotion is indicated by equipSlot = 7
-				return new ManaPotion(paramInventoryResult.getInt(4));
+				return new ManaPotion(paramInventoryResult.getInt(4), paramItemResult.getInt(10));
 			default:
 				return null;
 		}
@@ -215,7 +215,7 @@ public class DataBaseController
 				Statement statisticsStmt = this.dbConnection.createStatement(); ResultSet statisticsResult = statisticsStmt.executeQuery("SELECT monsterKillCount, numberOfDeaths, goldEarned, timePlayed FROM statistics WHERE statisticsID = " + retrieveIDResult.getInt(4));
 				Statement saveGameStmt = this.dbConnection.createStatement(); ResultSet saveGameResult = saveGameStmt.executeQuery("SELECT currentStoryLevel FROM saveGame WHERE saveGameID = " + retrieveIDResult.getInt(3));
 				Statement inventoryStmt = this.dbConnection.createStatement(); ResultSet inventoryResult = inventoryStmt.executeQuery("SELECT goldCount, armorPartsCount, healthPotionCount, manaPotionCount FROM inventory WHERE inventoryID = " + retrieveIDResult.getInt(2));
-				Statement itemStmt = this.dbConnection.createStatement(); ResultSet itemResult = itemStmt.executeQuery("SELECT alloc.slotID, item.itemID, equipSlot, attackValue, defenseValue, hpValue, levelRestriction, itemPrice, armorPartsRevenue FROM (SELECT slotID, itemID FROM inventoryItemAllocation WHERE inventoryID = " + retrieveIDResult.getInt(2) + ") AS alloc JOIN item ON alloc.itemID = item.itemID ORDER BY alloc.slotID"))
+				Statement itemStmt = this.dbConnection.createStatement(); ResultSet itemResult = itemStmt.executeQuery("SELECT alloc.slotID, item.itemID, equipSlot, attackValue, defenseValue, hpValue, levelRestriction, itemPrice, armorPartsRevenue, alloc.quickSlotID FROM (SELECT slotID, itemID, quickSlotID FROM inventoryItemAllocation WHERE inventoryID = " + retrieveIDResult.getInt(2) + ") AS alloc JOIN item ON alloc.itemID = item.itemID ORDER BY alloc.slotID"))
 			{
 				//TODO do something with saveGameData
 				saveGameResult.next();
@@ -442,7 +442,7 @@ public class DataBaseController
 								tmpID = 3;
 								hasManaPotion = true;
 							}
-							stmt.executeUpdate("UPDATE inventoryItemAllocation SET itemID = " + tmpID + " WHERE allocationID = " + itemResult.getInt(2));
+							stmt.executeUpdate("UPDATE inventoryItemAllocation SET itemID = " + tmpID + " ,quickSlotID = " + ((ConsumableModel)currentItem).getQuickSlotID() + " WHERE allocationID = " + itemResult.getInt(2));
 							if(itemResult.getInt(1) > 3)
 									toDeleteItemList.add(itemResult.getInt(1));
 							continue;

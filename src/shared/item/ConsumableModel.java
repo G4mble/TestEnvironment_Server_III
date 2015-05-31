@@ -9,18 +9,20 @@ import shared.character.PlayerCharacter;
 public abstract class ConsumableModel extends ItemModel
 {
 	protected int stackSize, valueModificator;
+	private int quickSlotID;
 	
 	/**
 	 * forwards paramID, paramGoldValue, paramName, paramImagePath to super constructor</br>
 	 * stores remaining parameters in global variables
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	public ConsumableModel(int paramID, int paramGoldValue, String paramName, String paramImagePath, int paramValueMod, int paramStackSize)
+	public ConsumableModel(int paramID, int paramGoldValue, String paramName, String paramImagePath, int paramValueMod, int paramStackSize, int paramQuickSlotID)
 	{
 		super(paramID, (paramGoldValue * paramStackSize), paramName, paramImagePath);
 		
 		this.valueModificator = paramValueMod;
 		this.stackSize = paramStackSize;
+		this.quickSlotID = paramQuickSlotID;
 	}
 	
 	/**
@@ -45,11 +47,30 @@ public abstract class ConsumableModel extends ItemModel
 	}
 	
 	/**
+	 * overwrites the current quickSlotID with the given one
+	 * @param paramID the quickSlotID to be set
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	public void setQuickSlotID(int paramID)
+	{
+		this.quickSlotID = paramID;
+	}
+	
+	/**
 	 * @return stackSize of the current consumable
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
 	public int getStackSize()
 	{
 		return this.stackSize;
+	}
+	
+	/**
+	 * @return the current quickSlotID
+	 * @author Staufenberg, Thomas, 5820359
+	 * */
+	public int getQuickSlotID()
+	{
+		return this.quickSlotID;
 	}
 }
