@@ -48,17 +48,20 @@ public class DataBaseController
 	 * */
 	private DataBaseController(ProgramController paramProgramController)
 	{
-		
+		System.out.println("DataBaseController: Pruefe ob Datenbank vorhanden.");
 		if(this.establishConnection())
+		{
 			this.closeConnection();
+			System.out.println("DataBaseController: Pruefung abgeschlossen, Datenbank vorhanden.");
+			this.incomingMessageList = new ArrayList<>();
+			this.programController = paramProgramController;
+			this.initializeDatabaseSchema();
+		}
 		else
 		{
-			System.err.println("Verbindung zur Datenbak fehlgeschlagen!");
+			System.err.println("DataBaseController: Datenbank konnte nicht gefunden werden!");
 			//TODO switch to no database mode
 		}
-		this.incomingMessageList = new ArrayList<>();
-		this.programController = paramProgramController;
-		this.initializeDatabaseSchema();
 	}
 	
 	/**
@@ -85,13 +88,13 @@ public class DataBaseController
 		{
 //			this.dbConnection = DriverManager.getConnection("jdbc:mysql://localhost/team12", "team12", "yiekahpo");
 			this.dbConnection = DriverManager.getConnection("jdbc:mysql://localhost:3306/test", "root", "");
+			System.out.println("DataBaseController: Verbindung zur Datenbank hergestellt.");
 			return true;
 		}
 		catch(SQLException sqlE)
 		{
-			System.err.println("Fehler in establishConnection()");
+			System.err.println("DataBaseController: Verbindung zur Datenbank konnte nicht hergestellt werden!");
 			//TODO handle exception
-			sqlE.printStackTrace();
 			return false;
 		}
 	}
@@ -108,12 +111,12 @@ public class DataBaseController
 			{
 				this.dbConnection.close();
 				this.dbConnection = null;
+				System.out.println("DataBaseController: Datenbankverbindung getrennt.");
 			}
 		}
 		catch(SQLException sqlE)
 		{
-			System.out.println("fehler in closeConnection()");
-			sqlE.printStackTrace();
+			System.out.println("DataBaseController: Datenbankverbindung konnte nicht getrennt werden oder ist bereits getrennt!");
 			//TODO handle exception
 		}
 	}
@@ -126,6 +129,8 @@ public class DataBaseController
 	private void initializeDatabaseSchema()
 	{
 		this.establishConnection();
+		
+		System.out.println("DataBaseController: Initialisiere Datenbank.");
 		
 		try(Statement stmt = this.dbConnection.createStatement())
 		{
@@ -140,12 +145,11 @@ public class DataBaseController
 			stmt.addBatch("INSERT IGNORE INTO item VALUES (1, -1, -1, -1, -1, -1, -1, -1), (2, 6, -1, -1, -1, -1, -1, -1), (3, 7, -1, -1, -1, -1, -1, -1)");
 			stmt.addBatch("INSERT IGNORE INTO player VALUES (1, 'dummy', 'dummy', 0, 0, 0, 0, 0)");
 			
-			stmt.executeBatch();
+			System.out.println("DataBaseController: Initialisierung erfolgreich.");
 		}
 		catch(SQLException sqlE)
 		{
-			System.err.println("Fehler in DBController.initializeDatabaseSchema()");
-			sqlE.printStackTrace();
+			System.err.println("DataBaseController: Initialisierung fehlgeschlagen!");
 			//TODO handle exception
 		}
 		finally
@@ -161,6 +165,7 @@ public class DataBaseController
 	 * */
 	private void sendMessage(Message paramMessage)
 	{
+		System.out.println("DataBaseController: Sende " + paramMessage.getClass().getName().substring(8));
 		this.programController.receiveMessage(paramMessage);
 	}
 	
@@ -205,6 +210,7 @@ public class DataBaseController
 	 * */
 	private PlayerCharacter loadPlayerData(String paramUsername, int paramClientID)
 	{		
+		System.out.println("DataBaseController: Lade Spielerdaten.");
 		this.establishConnection();
 		
 		try(Statement retrieveIDStmt = this.dbConnection.createStatement(); ResultSet retrieveIDResult = retrieveIDStmt.executeQuery("SELECT playerID, inventoryID, saveGameID, statisticsID FROM registeredUser JOIN playerAllocation ON registeredUser.username = playerAllocation.username WHERE playerAllocation.username = '" + paramUsername + "'"))
@@ -258,13 +264,13 @@ public class DataBaseController
 						currentPlayer = new Mage(paramClientID, playerResult.getInt(6), playerResult.getInt(7), playerResult.getInt(3), playerResult.getInt(4), playerResult.getInt(5), retrieveIDResult.getInt(1), playerResult.getString(2), playerResult.getString(1), currentInventory, currentStatistics);
 						break;
 				}
+				System.out.println("DataBaseController: Spielerdaten geladen.");
 				return currentPlayer;
 			}
 		}
 		catch(SQLException sqlE)
 		{
-			System.err.println("Fehler in DBController.loadPlayerData()");
-			sqlE.printStackTrace();
+			System.err.println("DataBaseController: Fehler beim Laden von Spielerdaten!");
 			//TODO handle exception
 		}
 		finally
@@ -282,6 +288,7 @@ public class DataBaseController
 	 * */
 	private Object[][] loadHighscore(String paramFilterAttribute)
 	{
+		System.out.println("DataBaseController: Lade Highscoredaten mit Filter: " + paramFilterAttribute);
 		this.establishConnection();
 		
 		try(Statement stmt = this.dbConnection.createStatement(); ResultSet highscoreResult = stmt.executeQuery("SELECT alloc.username, monsterKillCount, numberOfDeaths, goldEarned, timePlayed FROM statistics JOIN(SELECT playerAllocation.username, statisticsID FROM registeredUser JOIN playerAllocation ON registeredUser.username = playerAllocation.username) as alloc ON statistics.statisticsID = alloc.statisticsID ORDER BY " + paramFilterAttribute + " DESC"))
@@ -301,12 +308,12 @@ public class DataBaseController
 				for(int i = 1; i < 5; i++)
 					highscoreData[(highscoreResult.getRow() - 1)][i] = highscoreResult.getInt((i + 1));
 			}
+			System.out.println("DataBaseController: Highscoredaten geladen.");
 			return highscoreData;
 		}
 		catch(SQLException sqlE)
 		{
-			System.err.println("Fehler beim auslesen von Highscores\nDBController.loadHighscore()");
-			sqlE.printStackTrace();
+			System.err.println("DataBaseController: Fehler beim Auslesen von Highscoredateb.");
 			//TODO handle exception
 			return null;
 		}
@@ -375,8 +382,7 @@ public class DataBaseController
 		}
 		catch(SQLException sqlE)
 		{
-			System.err.println("Fehler in DBController.deleteItem()");
-			sqlE.printStackTrace();
+			System.err.println("DataBaseController: Fehler in this.deleteItem()");
 		}
 	}
 	
@@ -388,6 +394,7 @@ public class DataBaseController
 	 * */
 	private void savePlayerData(String paramUsername, PlayerCharacter paramPlayer)
 	{
+		System.out.println("DataBaseController: Speichere Spielerdaten.");
 		//collect data to save
 		StatisticsModel currentStatistics = paramPlayer.getStatistics();
 		InventoryModel currentInventory = paramPlayer.getInventory();
@@ -503,22 +510,22 @@ public class DataBaseController
 					stmt.executeUpdate("DELETE FROM item WHERE itemID = " + toDeleteItemList.get(i));
 				
 				this.dbConnection.commit();				//end transaction
+				System.out.println("DataBaseController: Spielerdaten gespeichert.");
 			}
 		}
 		catch(SQLException sqlE)
 		{
 			try
 			{
+				System.err.println("DataBaseController: Fehler beim Speichern von Spielerdaten: attempt dbConnection.rollback()");
 				this.dbConnection.rollback();					//onException: attempt rollback
 			}
 			catch(SQLException embSqlE)
 			{
-				System.err.println("Fehler in DBController.savePlayerData()\nrollback failed");
-				embSqlE.printStackTrace();
+				System.err.println("DataBaseController: Fehler beim Speichern von Spielerdaten: dbConntection.rollback() -> failed");
 				//TODO error: rollback failed
 			}
-			System.err.println("Fehler in DBController.savePlayerData()\nSQLException");
-			sqlE.printStackTrace();
+			System.err.println("DataBaseController: Fehler beim Speichern von Spielerdaten: dbConnection.rollback() -> success");
 			//TODO handle exception
 		}
 		finally
@@ -530,8 +537,7 @@ public class DataBaseController
 			}
 			catch(SQLException sqlE)
 			{
-				System.err.println("Fehler in DBController.savePlayerData()\nsetAutocommit(true) failed -> data integrity cannot be guaranteed");
-				sqlE.printStackTrace();
+				System.err.println("DataBaseController: Fehler beim Speichern von Spielerdaten: dbConnection.setAutocommit(true) -> failed");
 				//TODO handle exception: setAutocommit(true) failed -> data integrity cannot be guaranteed
 			}
 		}
@@ -547,19 +553,23 @@ public class DataBaseController
 	 * */
 	private boolean verifyLogin(String paramUsername, String paramPassword)
 	{
+		System.out.println("DataBaseController: Verifiziere Login Daten.");
 		this.establishConnection();
 		
 		try(Statement stmt = this.dbConnection.createStatement(); ResultSet registeredUserResult = stmt.executeQuery("SELECT password FROM registeredUser WHERE username = '" + paramUsername + "'"))
 		{
 			if(registeredUserResult.next())
 				if(registeredUserResult.getString(1).equals(paramPassword))
+				{
+					System.out.println("DataBaseController: Logindaten verifiziert, Benutzername, Password sind korrekt.");
 					return true;
+				}
+			System.out.println("DataBaseController: Logindaten verifiziert, Benutzername oder Passwort falsch.");
 			return false;
 		}
 		catch(SQLException sqlE)
 		{
-			System.err.println("Fehler beim verifizieren der Login-Daten\nDataBaseController.verfiyLogin()\n\n");
-			sqlE.printStackTrace();
+			System.err.println("DataBaseController: Fehler beim verifizieren der Login Daten.");
 		}
 		finally
 		{
@@ -576,17 +586,21 @@ public class DataBaseController
 	 * */
 	private boolean isValidUsername(String paramUsername)
 	{
+		System.out.println("DataBaseController: Pruefe ob Benutzername bereits vergeben.");
 		try(Statement stmt = this.dbConnection.createStatement(); ResultSet userResult = stmt.executeQuery("SELECT username FROM registeredUser WHERE username = '" + paramUsername + "'"))
 		{
 			if(!(userResult.next()))
+			{
+				System.out.println("DataBaseController: Benutzername noch nicht vergeben.");
 				return true;
+			}
 		}
 		catch(SQLException sqlE)
 		{
 			System.err.println("Fehler in DBController.isValidUsername()\nSQLException");
-			sqlE.printStackTrace();
 			//TODO handle exception
 		}
+		System.out.println("DataBaseController: Benutzername bereits vergeben.");
 		return false;
 	}
 	
@@ -600,6 +614,7 @@ public class DataBaseController
 	 * */
 	private boolean createNewUser(String paramUsername, String paramPassword)
 	{
+		System.out.println("DataBaseController: Erstelle neuen Benutzer in Datenbank.");
 		this.establishConnection();
 		
 		int inventoryID = -1, saveGameID = -1, statisticsID = -1;
@@ -645,21 +660,21 @@ public class DataBaseController
 				stmt.executeUpdate("INSERT INTO playerAllocation(username, playerID, inventoryID, saveGameID, statisticsID) VALUES('" + paramUsername + "', 1, " + inventoryID + ", " + saveGameID + ", " + statisticsID +")");
 				
 				this.dbConnection.commit();							//end transaction
+				System.out.println("DataBaseController: Benutzer erfolgreich erstellt.");
 			}
 			catch(SQLException sqlE)
 			{
 				try
 				{
+					System.err.println("DataBaseController: Fehler bei Erstellung von Benutzer: attempt dbConnection.rollback()");
 					this.dbConnection.rollback();					//onException: attempt rollback
 				}
 				catch(SQLException embSqlE)
 				{
-					System.err.println("Fehler in DBController.createNewUser()\nrollback failed");
-					embSqlE.printStackTrace();
+					System.err.println("DataBaseController: Fehler bei Erstellung von Benutzer: dbConntection.rollback() -> failed");
 					//TODO return error: rollback failed
 				}
-				System.err.println("Fehler in DBController.createNewUser()\nsqlException");
-				sqlE.printStackTrace();
+				System.err.println("DataBaseController: Fehler bei Erstellung von Benutzer!");
 				//TODO handle exception
 			}
 			finally
@@ -671,8 +686,7 @@ public class DataBaseController
 				}
 				catch(SQLException sqlE)
 				{
-					System.err.println("Fehler in DBController.createNewUser()\nsetAutocommit(true) failed -> data integrity cannot be guaranteed");
-					sqlE.printStackTrace();
+					System.err.println("DataBaseController: Fehler bei Erstellung von Benutzer: dbConnection.setAutocommit(true) -> failed");
 					//TODO handle exception: setAutocommit(true) failed -> data integrity cannot be guaranteed
 				}
 			}
@@ -692,6 +706,7 @@ public class DataBaseController
 	 * */
 	private boolean linkCharacterToUser(String paramUsername, PlayerCharacter paramPlayer)
 	{
+		System.out.println("DataBaseController: Erstelle neuen Charakter fuer bestehenden Benutzer.");
 		boolean noErrorDetected = true;
 		this.establishConnection();
 		
@@ -713,6 +728,7 @@ public class DataBaseController
 					stmt.executeUpdate("UPDATE playerAllocation SET playerID = " + playerIDResult.getInt(1) + " WHERE username = '" + paramUsername + "'");
 				}
 				this.dbConnection.commit();							// end transaction
+				System.out.println("DataBaseController: Charaktererstellung erfolgreich.");
 				return true;
 			}
 		}
@@ -721,16 +737,15 @@ public class DataBaseController
 			noErrorDetected = false;
 			try
 			{
+				System.err.println("DataBaseController: Fehler bei Charaktererstellung: attempt dbConnection.rollback()");
 				this.dbConnection.rollback(); 						// onException: attempt rollback
 			}
 			catch (SQLException embSqlE)
 			{
-				System.err.println("Fehler in DBController.linkCharacterToUser()\nrollback failed");
-				embSqlE.printStackTrace();
+				System.err.println("DataBaseController: Fehler bei Charaktererstellung: dbConntection.rollback() -> failed");
 				// TODO return error: rollback failed
 			}
-			System.err.println("Fehler in DBController.linkCharacterToUser()");
-			sqlE.printStackTrace();
+			System.err.println("DataBaseController: Fehler bei Charaktererstellung.");
 			// TODO handle exception
 		}
 		finally
@@ -744,8 +759,7 @@ public class DataBaseController
 			}
 			catch(SQLException sqlE)
 			{
-				System.err.println("Fehler in DBController.linkCharacterToUser()\nsetAutocommit(true) failed -> data integrity cannot be guaranteed");
-				sqlE.printStackTrace();
+				System.err.println("DataBaseController: Fehler bei Charaktererstellung: dbConnection.setAutocommit(true) -> failed");
 				//TODO handle exception: setAutocommit(true) failed -> data integrity cannot be guaranteed
 			}
 		}
@@ -760,6 +774,7 @@ public class DataBaseController
 	 * */
 	public void receiveMessage(Message paramMessage)
 	{
+		System.out.println("DataBaseController: Empfange " + paramMessage.getClass().getName().substring(8));
 		this.incomingMessageList.add(paramMessage);
 		if(!this.messageIsProcessing)
 			this.handleMessage();
@@ -772,6 +787,7 @@ public class DataBaseController
 	 * */
 	private void handleMessage()
 	{
+		System.out.println("DataBaseController: Starte Message handling.");
 		if(!this.messageIsProcessing)
 			this.messageIsProcessing = true;
 		while(true)
@@ -780,10 +796,12 @@ public class DataBaseController
 			try
 			{
 				currentMessage = this.incomingMessageList.remove(0);
+				System.out.println("DataBaseController: Behandle " + currentMessage.getClass().getName().substring(8));
 			}
 			catch(IndexOutOfBoundsException indexExc)
 			{
 				//stop message handling if there is no message left
+				System.out.println("DataBaseController: Keine weiteren Messages vorhanden.");
 				break;
 			}
 			
@@ -811,6 +829,8 @@ public class DataBaseController
 			else if(currentMessage instanceof LoadHighscoreMessage)
 				this.sendMessage(new HighscoreDataMessage((this.loadHighscore(((LoadHighscoreMessage) currentMessage).getFilterAttribute()))));
 		}
+		System.out.println("DataBaseController: Stoppe Message handling.");
+		System.out.println("-----------------------------------------------------------");
 		this.messageIsProcessing = false;
 	}
 }

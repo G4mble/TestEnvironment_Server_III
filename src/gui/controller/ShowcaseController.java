@@ -58,6 +58,7 @@ public class ShowcaseController implements ActionListener
 	 * */
 	private void generateNewEquipment(int paramSelectionID, boolean paramIsCrafted)
 	{
+		System.out.println("ItemManager: Erzeuge neues Equipment. isCrafted = " + paramIsCrafted);
 		Random randomGenerator = new Random();
 		int currentPlayerLevel = this.activePlayer.getLevel();
 		//calculate range used to generate some random values
@@ -182,10 +183,12 @@ public class ShowcaseController implements ActionListener
 	 * invokes crafting process</br>calculates crafting costs and perfoms a consistency check on these costs</br>
 	 * calls this.generateNewEquipmentByID() if the process is good to go
 	 * @param paramSelectionID equipSlotID of the item to be generated
+	 * @return true: item successfully crafted</br>false: inventory full AND/OR insufficient resources
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	private void craftEquipmentByID(int paramSelectionID)
+	private boolean craftEquipmentByID(int paramSelectionID)
 	{
+		System.out.println("ItemManager: Starte crafting Prozess.");
 		InventoryModel currentInventory = this.activePlayer.getInventory();
 		int currentPlayerLevel = this.activePlayer.getLevel();
 		int armorPartsCosts = ((Math.max(1, (currentPlayerLevel / 5))) * 6);
@@ -197,12 +200,14 @@ public class ShowcaseController implements ActionListener
 				this.generateNewEquipment(paramSelectionID, true);
 				currentInventory.modifyArmorPartsCount(-armorPartsCosts);
 				currentInventory.modifyGoldCount(-goldCosts);
+				return true;
 			}
 			else
 				this.showcaseView.displayErrorMessage(4);
 		}
 		else
 			this.showcaseView.displayErrorMessage(5);
+		return false;
 	}
 	
 	/**
@@ -212,6 +217,7 @@ public class ShowcaseController implements ActionListener
 	 * */
 	private void generateNewConsumableByID(int paramSelectionID)
 	{
+		System.out.println("ItemManager: Erzeuge neues Consumable.");
 		Random randomGenerator = new Random();
 		int currentStackSize = Math.max(1, (randomGenerator.nextInt(3)));
 		ConsumableModel currentItem = null; 
@@ -236,6 +242,7 @@ public class ShowcaseController implements ActionListener
 	 * */
 	private void generateNewGoldStack(int paramSelectedValue)
 	{
+		System.out.println("ItemManager: Erzeuge neuen GoldStack: " + paramSelectedValue);
 		GoldStack currentGoldStack = new GoldStack(paramSelectedValue);
 		this.globalInventoryList.add(currentGoldStack);
 		this.showcaseView.addItemToGlobalInventory(currentGoldStack.getItemName());
@@ -248,6 +255,7 @@ public class ShowcaseController implements ActionListener
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
+		boolean savePlayerData = true;
 		String actionCommand = e.getActionCommand();
 		if(actionCommand.startsWith("inventory"))
 		{
@@ -281,6 +289,8 @@ public class ShowcaseController implements ActionListener
 							this.showcaseView.displayErrorMessage(3);
 						break;
 				}
+			else
+				savePlayerData = false;
 		}
 		else if(actionCommand.startsWith("equipment"))
 		{
@@ -303,6 +313,8 @@ public class ShowcaseController implements ActionListener
 						currentItem.salvage(this.activePlayer);
 						break;
 				}
+			else
+				savePlayerData = false;
 		}
 		else if(actionCommand.startsWith("generate"))
 		{
@@ -318,6 +330,7 @@ public class ShowcaseController implements ActionListener
 					this.generateNewGoldStack(this.showcaseView.getSelectedGoldValueToGenerate());
 					break;
 			}
+			savePlayerData = false;
 		}
 		else if(actionCommand.startsWith("modify"))
 		{
@@ -354,23 +367,36 @@ public class ShowcaseController implements ActionListener
 				else
 					this.showcaseView.displayErrorMessage(4);
 			}
+			else
+				savePlayerData = false;
 		}
 		else if(actionCommand.equals("tgl_crafting"))
+		{
 			this.showcaseView.switchCraftingMode();
+			savePlayerData = false;
+		}
 		else if(actionCommand.equals("craft_equip"))
-			this.craftEquipmentByID(this.showcaseView.getSelectedEquipmentToGenerate());
+		{
+			if(!(this.craftEquipmentByID(this.showcaseView.getSelectedEquipmentToGenerate())))
+				savePlayerData = false;
+		}
 		else if(actionCommand.equals("highscore"))
+		{
 			this.programController.initiateHighscore();
+			savePlayerData = false;
+		}
 		else if(actionCommand.equals("logout"))
 		{
 			this.sendMessage(new SavePlayerDataMessage(this.activeUsername, this.activePlayer));
 			this.showcaseView.dispose();
 			this.programController.returnToMenu();
+			savePlayerData = false;
 		}
 		else if(actionCommand.equals("exit"))
 			System.exit(0);
 		
-		this.sendMessage(new SavePlayerDataMessage(this.activeUsername, this.activePlayer));
+		if(savePlayerData)
+			this.sendMessage(new SavePlayerDataMessage(this.activeUsername, this.activePlayer));
 		this.showcaseView.updateShowcaseView();
 	}
 	
@@ -381,6 +407,7 @@ public class ShowcaseController implements ActionListener
 	 * */
 	private void sendMessage(Message paramMessage)
 	{
+		System.out.println("SE_III_Controller: Sende " + paramMessage.getClass().getName().substring(8));
 		this.programController.receiveMessage(paramMessage);
 	}
 }

@@ -51,6 +51,7 @@ public class ProgramController
 	 * */
 	private void sendMessage(Message paramMessage)
 	{
+		System.out.println("ProgramController: Sende " + paramMessage.getClass().getName().substring(8));
 		this.dbController.receiveMessage(paramMessage);
 	}
 	
@@ -194,6 +195,7 @@ public class ProgramController
 	 * */
 	public void receiveMessage(Message paramMessage)
 	{
+		System.out.println("ProgramController: Empfange " + paramMessage.getClass().getName().substring(8));
 		this.incomingMessageList.add(paramMessage);
 		if(!this.messageIsProcessing)
 			this.handleMessage();
@@ -205,6 +207,7 @@ public class ProgramController
 	 * */
 	private void handleMessage()
 	{
+		System.out.println("ProgramController: Starte Message handling.");
 		if(!this.messageIsProcessing)
 			this.messageIsProcessing = true;
 		while(true)
@@ -213,9 +216,11 @@ public class ProgramController
 			try
 			{
 				currentMessage = this.incomingMessageList.remove(0);
+				System.out.println("ProgramController: Behandle " + currentMessage.getClass().getName().substring(8));
 			}
 			catch(IndexOutOfBoundsException indexExc)
 			{
+				System.out.println("ProgramController: Keine weiteren Messages vorhanden.");
 				break;
 			}
 			
@@ -242,6 +247,8 @@ public class ProgramController
 				}
 			}
 		}
+		System.out.println("ProgramController: Stoppe Message handling.");
+		System.out.println("-----------------------------------------------------------");
 		this.messageIsProcessing = false;
 	}
 }
