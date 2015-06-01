@@ -145,6 +145,8 @@ public class DataBaseController
 			stmt.addBatch("INSERT IGNORE INTO item VALUES (1, -1, -1, -1, -1, -1, -1, -1), (2, 6, -1, -1, -1, -1, -1, -1), (3, 7, -1, -1, -1, -1, -1, -1)");
 			stmt.addBatch("INSERT IGNORE INTO player VALUES (1, 'dummy', 'dummy', 0, 0, 0, 0, 0)");
 			
+			stmt.executeBatch();
+			
 			System.out.println("DataBaseController: Initialisierung erfolgreich.");
 		}
 		catch(SQLException sqlE)
