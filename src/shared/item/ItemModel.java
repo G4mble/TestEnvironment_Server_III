@@ -7,6 +7,9 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
+import shared.item.EquipmentModel;
+import shared.item.GoldStack;
+import shared.item.ItemModel;
 import shared.character.PlayerCharacter;
 
 /**
@@ -16,7 +19,7 @@ import shared.character.PlayerCharacter;
 public abstract class ItemModel
 {
 	protected int itemID, itemGoldValue;			//itemID is required to be -1 if the item is newly created (DB indicator)
-	private String itemName, itemImagePath;			//itemImagePath is required for DB storage
+	private String itemName, itemImagePath;
 	private int xPos, yPos;							//only required when put into globalInventory
 	private Image itemImage;
 	
@@ -31,14 +34,6 @@ public abstract class ItemModel
 		this.itemGoldValue = paramGoldValue;
 		this.itemName = paramName;
 		this.itemImagePath = paramImagePath;
-		try
-		{
-			this.itemImage = ImageIO.read(new File(this.itemImagePath));
-		}
-		catch(IOException ioE)
-		{
-			//TODO handle exception
-		}
 	}
 	
 	/**
@@ -104,6 +99,22 @@ public abstract class ItemModel
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * reads the itemImage depending on the current itemImagePath
+	 * @author Staufenberg, Thomas, 5820359 
+	 * */
+	public void readItemTexture()
+	{
+		try
+		{
+			this.itemImage = ImageIO.read(new File(this.itemImagePath));
+		}
+		catch(IOException ioE)
+		{
+			//TODO handle exception
+		}
 	}
 	
 	/**

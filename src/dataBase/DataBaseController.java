@@ -130,14 +130,12 @@ public class DataBaseController
 	{
 		this.establishConnection();
 		
-		System.out.println("DataBaseController: Initialisiere Datenbank.");
-		
 		try(Statement stmt = this.dbConnection.createStatement())
 		{
 			stmt.addBatch("CREATE TABLE IF NOT EXISTS inventory(inventoryID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, goldCount INT NOT NULL DEFAULT 0, armorPartsCount INT NOT NULL DEFAULT 0, healthPotionCount INT NOT NULL DEFAULT 0, manaPotionCount INT NOT NULL DEFAULT 0)");
 			stmt.addBatch("CREATE TABLE IF NOT EXISTS item(itemID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, equipSlot INT NOT NULL, attackValue INT NOT NULL, defenseValue INT NOT NULL, hpValue INT NOT NULL, levelRestriction INT NOT NULL, itemPrice INT NOT NULL, armorPartsRevenue INT NOT NULL)");
 			stmt.addBatch("CREATE TABLE IF NOT EXISTS inventoryitemallocation(allocationID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, inventoryID INT NOT NULL, slotID INT NOT NULL, itemID INT NOT NULL, quickSlotID INT NOT NULL DEFAULT -1, CONSTRAINT FOREIGN KEY(inventoryID) REFERENCES inventory(inventoryID), CONSTRAINT FOREIGN KEY(itemID) REFERENCES item(itemID))");
-			stmt.addBatch("CREATE TABLE IF NOT EXISTS player(playerID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, charImg VARCHAR(200) NOT NULL, charName VARCHAR(30) NOT NULL, hitpoints INT NOT NULL, attackValue INT NOT NULL, defenseValue INT NOT NULL, currentLevel INT NOT NULL DEFAULT 1, experience INT NOT NULL DEFAULT 0)");
+			stmt.addBatch("CREATE TABLE IF NOT EXISTS player(playerID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, charName VARCHAR(30) NOT NULL, hitpoints INT NOT NULL, attackValue INT NOT NULL, defenseValue INT NOT NULL, currentLevel INT NOT NULL DEFAULT 1, experience INT NOT NULL DEFAULT 0)");
 			stmt.addBatch("CREATE TABLE IF NOT EXISTS registereduser(username VARCHAR(30) NOT NULL PRIMARY KEY, password VARCHAR(30) NOT NULL)");
 			stmt.addBatch("CREATE TABLE IF NOT EXISTS savegame(saveGameID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, currentStoryLevel INT NOT NULL DEFAULT 1)");
 			stmt.addBatch("CREATE TABLE IF NOT EXISTS statistics(statisticsID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, monsterKillCount INT NOT NULL DEFAULT 0, numberOfDeaths INT NOT NULL DEFAULT 0, goldEarned INT NOT NULL DEFAULT 0, timePlayed INT NOT NULL DEFAULT 0)");
@@ -146,12 +144,11 @@ public class DataBaseController
 			stmt.addBatch("INSERT IGNORE INTO player VALUES (1, 'dummy', 'dummy', 0, 0, 0, 0, 0)");
 			
 			stmt.executeBatch();
-			
-			System.out.println("DataBaseController: Initialisierung erfolgreich.");
 		}
 		catch(SQLException sqlE)
 		{
-			System.err.println("DataBaseController: Initialisierung fehlgeschlagen!");
+			System.err.println("Fehler in DBController.initializeDatabaseSchema()");
+			sqlE.printStackTrace();
 			//TODO handle exception
 		}
 		finally
@@ -210,16 +207,15 @@ public class DataBaseController
 	 * @return the PlayerCharacter created from the data read from the database
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	private PlayerCharacter loadPlayerData(String paramUsername, int paramClientID)
+	protected PlayerCharacter loadPlayerData(String paramUsername, int paramClientID)
 	{		
-		System.out.println("DataBaseController: Lade Spielerdaten.");
 		this.establishConnection();
 		
 		try(Statement retrieveIDStmt = this.dbConnection.createStatement(); ResultSet retrieveIDResult = retrieveIDStmt.executeQuery("SELECT playerID, inventoryID, saveGameID, statisticsID FROM registeredUser JOIN playerAllocation ON registeredUser.username = playerAllocation.username WHERE playerAllocation.username = '" + paramUsername + "'"))
 		{
 			retrieveIDResult.next();
 			
-			try(Statement playerStmt = this.dbConnection.createStatement(); ResultSet playerResult = playerStmt.executeQuery("SELECT charImg, charName, hitpoints, attackValue, defenseValue, currentLevel, experience FROM player WHERE playerID = " +  retrieveIDResult.getInt(1));
+			try(Statement playerStmt = this.dbConnection.createStatement(); ResultSet playerResult = playerStmt.executeQuery("SELECT charName, hitpoints, attackValue, defenseValue, currentLevel, experience FROM player WHERE playerID = " +  retrieveIDResult.getInt(1));
 				Statement statisticsStmt = this.dbConnection.createStatement(); ResultSet statisticsResult = statisticsStmt.executeQuery("SELECT monsterKillCount, numberOfDeaths, goldEarned, timePlayed FROM statistics WHERE statisticsID = " + retrieveIDResult.getInt(4));
 				Statement saveGameStmt = this.dbConnection.createStatement(); ResultSet saveGameResult = saveGameStmt.executeQuery("SELECT currentStoryLevel FROM saveGame WHERE saveGameID = " + retrieveIDResult.getInt(3));
 				Statement inventoryStmt = this.dbConnection.createStatement(); ResultSet inventoryResult = inventoryStmt.executeQuery("SELECT goldCount, armorPartsCount, healthPotionCount, manaPotionCount FROM inventory WHERE inventoryID = " + retrieveIDResult.getInt(2));
@@ -257,22 +253,22 @@ public class DataBaseController
 				//create new player, link with inventory, statistics
 				playerResult.next();
 				PlayerCharacter currentPlayer = null;
-				switch(playerResult.getString(2))
+				switch(playerResult.getString(1))
 				{
 					case "Krieger":
-						currentPlayer = new Warrior(paramClientID, playerResult.getInt(6), playerResult.getInt(7), playerResult.getInt(3), playerResult.getInt(4), playerResult.getInt(5), retrieveIDResult.getInt(1), playerResult.getString(2), playerResult.getString(1), currentInventory, currentStatistics);
+						currentPlayer = new Warrior(paramClientID, playerResult.getInt(5), playerResult.getInt(6), playerResult.getInt(2), playerResult.getInt(3), playerResult.getInt(4), retrieveIDResult.getInt(1), currentInventory, currentStatistics);
 						break;
 					case "Magier":
-						currentPlayer = new Mage(paramClientID, playerResult.getInt(6), playerResult.getInt(7), playerResult.getInt(3), playerResult.getInt(4), playerResult.getInt(5), retrieveIDResult.getInt(1), playerResult.getString(2), playerResult.getString(1), currentInventory, currentStatistics);
+						currentPlayer = new Mage(paramClientID, playerResult.getInt(5), playerResult.getInt(6), playerResult.getInt(2), playerResult.getInt(3), playerResult.getInt(4), retrieveIDResult.getInt(1), currentInventory, currentStatistics);
 						break;
 				}
-				System.out.println("DataBaseController: Spielerdaten geladen.");
 				return currentPlayer;
 			}
 		}
 		catch(SQLException sqlE)
 		{
-			System.err.println("DataBaseController: Fehler beim Laden von Spielerdaten!");
+			System.err.println("Fehler in DBController.loadPlayerData()");
+			sqlE.printStackTrace();
 			//TODO handle exception
 		}
 		finally
@@ -706,9 +702,8 @@ public class DataBaseController
 	 * @return true: character successfully linked to user</br>false: error during the process
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	private boolean linkCharacterToUser(String paramUsername, PlayerCharacter paramPlayer)
+	protected boolean linkCharacterToUser(String paramUsername, PlayerCharacter paramPlayer)
 	{
-		System.out.println("DataBaseController: Erstelle neuen Charakter fuer bestehenden Benutzer.");
 		boolean noErrorDetected = true;
 		this.establishConnection();
 		
@@ -720,7 +715,7 @@ public class DataBaseController
 				this.dbConnection.setAutoCommit(false);				// begin transaction
 
 				//insert character into player
-				stmt.executeUpdate("INSERT INTO player(charImg, charName, hitpoints, attackValue, defenseValue) VALUES('" + paramPlayer.getImagePath() + "', '" + paramPlayer.getCharacterName() + "', " + paramPlayer.getCurrentLife() + ", " + paramPlayer.getAttack() + ", " + paramPlayer.getDefense() + ")");
+				stmt.executeUpdate("INSERT INTO player(charName, hitpoints, attackValue, defenseValue) VALUES('" + paramPlayer.getCharacterName() + "', " + paramPlayer.getCurrentLife() + ", " + paramPlayer.getAttack() + ", " + paramPlayer.getDefense() + ")");
 
 				//retrieve autogenerated playerID from db 
 				try (ResultSet playerIDResult = stmt.executeQuery("SELECT max(playerID) FROM player"))
@@ -730,7 +725,6 @@ public class DataBaseController
 					stmt.executeUpdate("UPDATE playerAllocation SET playerID = " + playerIDResult.getInt(1) + " WHERE username = '" + paramUsername + "'");
 				}
 				this.dbConnection.commit();							// end transaction
-				System.out.println("DataBaseController: Charaktererstellung erfolgreich.");
 				return true;
 			}
 		}
@@ -739,15 +733,16 @@ public class DataBaseController
 			noErrorDetected = false;
 			try
 			{
-				System.err.println("DataBaseController: Fehler bei Charaktererstellung: attempt dbConnection.rollback()");
 				this.dbConnection.rollback(); 						// onException: attempt rollback
 			}
 			catch (SQLException embSqlE)
 			{
-				System.err.println("DataBaseController: Fehler bei Charaktererstellung: dbConntection.rollback() -> failed");
+				System.err.println("Fehler in DBController.linkCharacterToUser()\nrollback failed");
+				embSqlE.printStackTrace();
 				// TODO return error: rollback failed
 			}
-			System.err.println("DataBaseController: Fehler bei Charaktererstellung.");
+			System.err.println("Fehler in DBController.linkCharacterToUser()");
+			sqlE.printStackTrace();
 			// TODO handle exception
 		}
 		finally
@@ -761,7 +756,8 @@ public class DataBaseController
 			}
 			catch(SQLException sqlE)
 			{
-				System.err.println("DataBaseController: Fehler bei Charaktererstellung: dbConnection.setAutocommit(true) -> failed");
+				System.err.println("Fehler in DBController.linkCharacterToUser()\nsetAutocommit(true) failed -> data integrity cannot be guaranteed");
+				sqlE.printStackTrace();
 				//TODO handle exception: setAutocommit(true) failed -> data integrity cannot be guaranteed
 			}
 		}

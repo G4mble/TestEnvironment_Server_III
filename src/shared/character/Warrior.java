@@ -23,7 +23,7 @@ public class Warrior extends PlayerCharacter
 	 * */
 	public Warrior(int clientId)
 	{
-		this(clientId, 1, 0, 100, 7, 3, 345, "Krieger", "krieger.png", new InventoryModel(), new StatisticsModel());
+		this(clientId, 1, 0, 100, 7, 3, 345, new InventoryModel(), new StatisticsModel());
 		this.generateDefaultEquipment();
 	}
 	
@@ -32,9 +32,9 @@ public class Warrior extends PlayerCharacter
 	 * creates new Warrior and forwards all given values to the superclass
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	public Warrior(int clientId, int level, int experiencePoints, int life, int attack, int defense, int characterId, String characterName, String imagePath, InventoryModel inventory, StatisticsModel statistics)
+	public Warrior(int clientId, int level, int experiencePoints, int life, int attack, int defense, int characterId, InventoryModel inventory, StatisticsModel statistics)
 	{
-		super(clientId, level, experiencePoints, life, attack, defense, characterId, characterName, -1, -1, true, imagePath, inventory, statistics);
+		super(clientId, level, experiencePoints, life, attack, defense, characterId, "Krieger", -1, -1, true, "krieger.png", inventory, statistics);
 	}
 
 	/**

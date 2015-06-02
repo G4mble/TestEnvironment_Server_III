@@ -26,7 +26,7 @@ public class Mage extends PlayerCharacter
 	 * */
 	public Mage(int clientId)
 	{
-		this(clientId, 1, 0, 70, 10, 1, 567, "Magier", "Magier.png", new InventoryModel(), new StatisticsModel());
+		this(clientId, 1, 0, 70, 10, 1, 567, new InventoryModel(), new StatisticsModel());
 		this.generateDefaultEquipment();
 	}
 	
@@ -35,9 +35,9 @@ public class Mage extends PlayerCharacter
 	 * creates new Mage and forwards all given values to the superclass</br>sets the mages maximum and current mana
 	 * @author Staufenberg, Thomas, 5820359
 	 * */
-	public Mage(int clientId, int level, int experiencePoints, int life, int attack, int defense, int characterId, String characterName, String imagePath, InventoryModel inventory, StatisticsModel statistics)
+	public Mage(int clientId, int level, int experiencePoints, int life, int attack, int defense, int characterId, InventoryModel inventory, StatisticsModel statistics)
 	{
-		super(clientId, level, experiencePoints, life, attack, defense, characterId, characterName, -1, -1, true, imagePath, inventory, statistics);
+		super(clientId, level, experiencePoints, life, attack, defense, characterId, "Magier", -1, -1, true, "mage.png", inventory, statistics);
 		this.maximumMana = 100;
 		this.currentMana = this.maximumMana;
 	}
