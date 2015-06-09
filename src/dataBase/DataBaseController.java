@@ -141,7 +141,7 @@ public class DataBaseController
 			stmt.addBatch("CREATE TABLE IF NOT EXISTS statistics(statisticsID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, monsterKillCount INT NOT NULL DEFAULT 0, numberOfDeaths INT NOT NULL DEFAULT 0, goldEarned INT NOT NULL DEFAULT 0, timePlayed INT NOT NULL DEFAULT 0)");
 			stmt.addBatch("CREATE TABLE IF NOT EXISTS playerallocation(allocationID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, username VARCHAR(30) NOT NULL, playerID INT NOT NULL, inventoryID INT NOT NULL, saveGameID INT NOT NULL, statisticsID INT NOT NULL, CONSTRAINT FOREIGN KEY(username) REFERENCES registereduser(username), CONSTRAINT FOREIGN KEY(playerID) REFERENCES player(playerID), CONSTRAINT FOREIGN KEY(inventoryID) REFERENCES inventory(inventoryID), CONSTRAINT FOREIGN KEY(saveGameID) REFERENCES savegame(saveGameID), CONSTRAINT FOREIGN KEY(statisticsID) REFERENCES statistics(statisticsID))");
 			stmt.addBatch("INSERT IGNORE INTO item VALUES (1, -1, -1, -1, -1, -1, -1, -1), (2, 6, -1, -1, -1, -1, -1, -1), (3, 7, -1, -1, -1, -1, -1, -1)");
-			stmt.addBatch("INSERT IGNORE INTO player VALUES (1, 'dummy', 'dummy', 0, 0, 0, 0, 0)");
+			stmt.addBatch("INSERT IGNORE INTO player VALUES (1, 'dummy', 0, 0, 0, 0, 0)");
 			
 			stmt.executeBatch();
 		}
